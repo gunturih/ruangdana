@@ -3608,23 +3608,10 @@
                 if (typeof args[0] === 'string' || typeof args[0] === 'number') payloadObj.id = args[0];
               }
 
-              var requestBody = JSON.stringify({
-                action: action,
-                payload: payloadObj,
-                actor: (window.app && window.app.getActiveUser) ? window.app.getActiveUser() : 'Suami'
-              });
+              var actor = (window.app && window.app.getActiveUser) ? window.app.getActiveUser() : 'Suami';
+              var payloadJson = JSON.stringify(payloadObj);
 
-              fetch(apiUrl, {
-                method: 'POST',
-                body: requestBody,
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                redirect: 'follow'
-              })
-              .then(function (res) {
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                return res.text();
-              })
-              .then(function (text) {
+              function processResultText(text) {
                 var data;
                 try {
                   data = JSON.parse(text);
@@ -3639,10 +3626,69 @@
                 } else {
                   self.successFn(data);
                 }
-              })
-              .catch(function (err) {
-                self.failureFn(err);
-              });
+              }
+
+              function executePostFallback() {
+                var requestBody = JSON.stringify({
+                  action: action,
+                  payload: payloadObj,
+                  actor: actor
+                });
+
+                fetch(apiUrl, {
+                  method: 'POST',
+                  body: requestBody,
+                  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                  redirect: 'follow'
+                })
+                .then(function (res) {
+                  if (!res.ok) throw new Error('HTTP ' + res.status);
+                  return res.text();
+                })
+                .then(function (text) {
+                  processResultText(text);
+                })
+                .catch(function (err) {
+                  self.failureFn(err);
+                });
+              }
+
+              // SOLUSI TOTAL CORS GOOGLE APPS SCRIPT:
+              // Browser memblokir 302 Redirect pada permintaan POST lintas domain (CORS "Failed to fetch").
+              // Sedangkan permintaan GET dengan query parameter diizinkan 100% oleh peramban tanpa terhalang 302!
+              if (payloadJson.length < 3500) {
+                var sep = apiUrl.indexOf('?') === -1 ? '?' : '&';
+                var getUrl = apiUrl + sep + 'action=' + encodeURIComponent(action) +
+                             '&payload=' + encodeURIComponent(payloadJson) +
+                             '&actor=' + encodeURIComponent(actor) +
+                             '&_t=' + Date.now();
+
+                if (typeof args[0] === 'string' || typeof args[0] === 'number') {
+                  getUrl += '&arg0=' + encodeURIComponent(args[0]);
+                  if (action === 'apiVerifyUserPin') getUrl += '&username=' + encodeURIComponent(args[0]);
+                }
+                if (typeof args[1] === 'string' || typeof args[1] === 'number') {
+                  getUrl += '&arg1=' + encodeURIComponent(args[1]);
+                  if (action === 'apiVerifyUserPin') getUrl += '&pin=' + encodeURIComponent(args[1]);
+                }
+
+                fetch(getUrl, {
+                  method: 'GET',
+                  redirect: 'follow'
+                })
+                .then(function (res) {
+                  if (!res.ok) throw new Error('HTTP ' + res.status);
+                  return res.text();
+                })
+                .then(function (text) {
+                  processResultText(text);
+                })
+                .catch(function (getErr) {
+                  executePostFallback();
+                });
+              } else {
+                executePostFallback();
+              }
             }
           };
 
@@ -6099,10 +6145,11 @@
           statusEl.style.border = '1px solid var(--accent-blue)';
         }
 
-        fetch(url, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'apiGetDropdowns', payload: {}, actor: 'Suami' }),
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        var sep = url.indexOf('?') === -1 ? '?' : '&';
+        var testUrl = url + sep + 'action=apiGetDropdowns&_t=' + Date.now();
+
+        fetch(testUrl, {
+          method: 'GET',
           redirect: 'follow'
         })
         .then(function (res) {
