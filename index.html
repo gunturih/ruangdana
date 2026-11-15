@@ -3476,9 +3476,27 @@
           onclick="app.submitProfilePin()">Buka Akses</button>
       </div>
 
-      <div style="margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--border-color);">
-        <button type="button" class="btn-sm-action" onclick="app.openGasConfigModal()" style="font-size: 0.75rem; color: var(--text-muted); width: 100%;">
-          ⚙️ Atur URL Backend Google Apps Script
+      <!-- KOTAK TEMPEL URL GOOGLE APPS SCRIPT LANGSUNG DI MODAL LOGIN -->
+      <div id="loginGasUrlBox" style="margin-top: 14px; padding: 12px; background: rgba(56, 189, 248, 0.08); border: 1px dashed var(--accent-blue); border-radius: 12px; text-align: left;">
+        <div style="font-size: 0.78rem; font-weight: 700; color: var(--accent-blue); margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+          <span>⚙️ Tempel URL Google Apps Script:</span>
+          <span id="badgeGasConnected" style="font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; display: none;"></span>
+        </div>
+        <div style="display: flex; gap: 6px; margin-top: 6px;">
+          <input type="url" id="inputLoginGasUrl" class="form-input" placeholder="https://script.google.com/macros/s/.../exec" style="font-size: 0.78rem; padding: 6px 10px; flex: 1;">
+          <button type="button" class="btn-accent-blue" style="padding: 6px 12px; font-size: 0.78rem; white-space: nowrap;" onclick="app.saveLoginGasUrl()">Simpan</button>
+        </div>
+        <small style="font-size: 0.68rem; color: var(--text-muted); display: block; margin-top: 5px; line-height: 1.3;">
+          Tempel URL Web App dari Google Sheets Anda di sini agar saldo, transaksi & grafik langsung termuat.
+        </small>
+      </div>
+
+      <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" class="btn-sm-action" onclick="app.bypassLogin()" style="font-size: 0.75rem; color: var(--accent-emerald); font-weight: 600; background: transparent; border: none; cursor: pointer;">
+          🔓 Masuk Langsung (Lewati PIN)
+        </button>
+        <button type="button" class="btn-sm-action" onclick="app.openGasConfigModal()" style="font-size: 0.75rem; color: var(--text-muted); background: transparent; border: none; cursor: pointer;">
+          Bantuan Panduan ⚙️
         </button>
       </div>
 
@@ -3515,7 +3533,7 @@
   </div>
 
   <!-- MODAL: PENGATURAN KONEKSI BACKEND (GOOGLE APPS SCRIPT URL) -->
-  <div class="modal-overlay" id="modalGasConfig">
+  <div class="modal-overlay" id="modalGasConfig" style="z-index: 10005;">
     <div class="modal-content" style="max-width: 540px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
         <h3 style="margin: 0; font-weight: 800; font-size: 1.2rem;">⚙️ Koneksi Backend Google Apps Script</h3>
@@ -3699,7 +3717,66 @@
         }
         var curr = (localStorage.getItem('ruangdana_user') || 'suami').toLowerCase();
         this.selectProfile(curr === 'istri' ? 'istri' : 'suami');
+
+        // Sinkronisasi nilai URL Google Apps Script ke kolom inline
+        var inpUrl = document.getElementById('inputLoginGasUrl');
+        var savedUrl = localStorage.getItem('ruangdana_gas_api_url') || '';
+        if (inpUrl) inpUrl.value = savedUrl;
+        var badge = document.getElementById('badgeGasConnected');
+        if (badge) {
+          if (savedUrl) {
+            badge.textContent = 'Terhubung ✓';
+            badge.style.display = 'inline-block';
+            badge.style.background = 'rgba(16, 185, 129, 0.2)';
+            badge.style.color = 'var(--accent-emerald)';
+          } else {
+            badge.textContent = 'Belum Terhubung';
+            badge.style.display = 'inline-block';
+            badge.style.background = 'rgba(244, 63, 94, 0.2)';
+            badge.style.color = 'var(--accent-rose)';
+          }
+        }
+
         this.openModal('modalFamilyLogin');
+      },
+
+      saveLoginGasUrl: function () {
+        var inp = document.getElementById('inputLoginGasUrl');
+        var url = inp ? inp.value.trim() : '';
+        if (url) {
+          localStorage.setItem('ruangdana_gas_api_url', url);
+          var inpMain = document.getElementById('inputGasApiUrl');
+          if (inpMain) inpMain.value = url;
+          var badge = document.getElementById('badgeGasConnected');
+          if (badge) {
+            badge.textContent = 'Terhubung ✓';
+            badge.style.display = 'inline-block';
+            badge.style.background = 'rgba(16, 185, 129, 0.2)';
+            badge.style.color = 'var(--accent-emerald)';
+          }
+          this.showToast('✅ URL Backend berhasil disimpan & dihubungkan!', 'success');
+          this.loadDashboard();
+          this.loadDropdowns();
+        } else {
+          this.showToast('Harap masukkan URL yang valid.', 'warning');
+        }
+      },
+
+      bypassLogin: function () {
+        var prof = this.selectedLoginProfile || 'suami';
+        var properName = prof === 'suami' ? 'Suami' : 'Istri';
+        localStorage.setItem('ruangdana_user', properName);
+        this.applyActiveUser(properName);
+        this.closeModal('modalFamilyLogin');
+        var errEl = document.getElementById('loginPinError');
+        if (errEl) errEl.style.display = 'none';
+
+        if (window.__isGasPolyfilled && !localStorage.getItem('ruangdana_gas_api_url')) {
+          this.openGasConfigModal();
+        } else {
+          this.loadDashboard();
+          this.loadDropdowns();
+        }
       },
 
       closeProfileModal: function () {
@@ -3724,6 +3801,7 @@
         }
 
         var isDefaultPin = (prof === 'suami' && pin === '1111') || (prof === 'istri' && pin === '2222');
+        var hasGasUrl = !!(localStorage.getItem('ruangdana_gas_api_url') || '').trim();
         var btn = document.getElementById('btnLoginSubmit');
         if (btn) btn.disabled = true;
 
@@ -3742,6 +3820,12 @@
             self.loadDashboard();
             self.loadDropdowns();
           }
+        }
+
+        // Buka akses langsung jika PIN default atau jika backend belum dikonfigurasi
+        if (isDefaultPin || !hasGasUrl) {
+          doLoginSuccess();
+          return;
         }
 
         if (typeof google !== 'undefined' && google.script && google.script.run) {
@@ -5929,12 +6013,28 @@
         var url = inp ? inp.value.trim() : '';
         if (url) {
           localStorage.setItem('ruangdana_gas_api_url', url);
-          this.showToast('URL Backend berhasil disimpan!', 'success');
+          var inpLogin = document.getElementById('inputLoginGasUrl');
+          if (inpLogin) inpLogin.value = url;
+          var badge = document.getElementById('badgeGasConnected');
+          if (badge) {
+            badge.textContent = 'Terhubung ✓';
+            badge.style.display = 'inline-block';
+            badge.style.background = 'rgba(16, 185, 129, 0.2)';
+            badge.style.color = 'var(--accent-emerald)';
+          }
+          this.showToast('✅ URL Backend berhasil disimpan & dihubungkan!', 'success');
           this.closeModal('modalGasConfig');
           this.loadDashboard();
           this.loadDropdowns();
         } else {
           localStorage.removeItem('ruangdana_gas_api_url');
+          var badge = document.getElementById('badgeGasConnected');
+          if (badge) {
+            badge.textContent = 'Belum Terhubung';
+            badge.style.display = 'inline-block';
+            badge.style.background = 'rgba(244, 63, 94, 0.2)';
+            badge.style.color = 'var(--accent-rose)';
+          }
           this.showToast('URL Backend dikosongkan.', 'warning');
           this.closeModal('modalGasConfig');
         }
