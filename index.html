@@ -3465,7 +3465,8 @@
           style="color: var(--accent-rose); font-size: 0.78rem; text-align: center; margin-top: 6px; display: none;">PIN
           salah, silakan coba lagi.</div>
         <div id="loginPinHint" style="font-size: 0.75rem; color: var(--accent-blue); text-align: center; margin-top: 6px;">
-          💡 PIN Bawaan: <strong>1111</strong> (Suami) &bull; <strong>2222</strong> (Istri)
+          💡 PIN Bawaan: <strong>1111</strong> (Suami) &bull; <strong>2222</strong> (Istri) <br>
+          <span style="font-size: 0.68rem; color: var(--text-muted);">(Dapat diubah bebas di Google Sheets tab <em>Pengguna</em>)</span>
         </div>
       </div>
 
@@ -3567,85 +3568,83 @@
         window.google = window.google || {};
         window.google.script = window.google.script || {};
 
-        function GasRunner(successFn, failureFn) {
-          this.successFn = successFn || function () {};
-          this.failureFn = failureFn || function (err) {
-            console.error('GAS API Bridge Error:', err);
-            if (window.app && window.app.showToast) {
-              window.app.showToast('Gagal memproses data: ' + (err.message || err), 'error');
+        function createGasProxy(successFn, failureFn) {
+          var runner = {
+            successFn: successFn || function () {},
+            failureFn: failureFn || function (err) {
+              console.error('GAS API Bridge Error:', err);
+              if (window.app && window.app.showToast) {
+                window.app.showToast('Gagal memproses data: ' + (err.message || err), 'error');
+              }
+            },
+            withSuccessHandler: function (fn) {
+              return createGasProxy(fn, this.failureFn);
+            },
+            withFailureHandler: function (fn) {
+              return createGasProxy(this.successFn, fn);
+            },
+            _call: function (action, args) {
+              var self = this;
+              var apiUrl = (localStorage.getItem('ruangdana_gas_api_url') || '').trim();
+              if (!apiUrl) {
+                if (window.app && window.app.openGasConfigModal) {
+                  window.app.openGasConfigModal();
+                } else {
+                  alert('Harap masukkan URL Web App Google Apps Script Anda agar GitHub Pages terhubung ke database spreadsheet.');
+                }
+                self.failureFn(new Error('URL Google Apps Script belum dikonfigurasi.'));
+                return;
+              }
+
+              var payloadObj = {};
+              if (args.length === 1 && typeof args[0] === 'object' && args[0] !== null && !Array.isArray(args[0])) {
+                payloadObj = args[0];
+              } else if (args.length > 0) {
+                payloadObj = { arg0: args[0], arg1: args[1], arg2: args[2], arg3: args[3], allArgs: args };
+                if (typeof args[0] === 'string' || typeof args[0] === 'number') payloadObj.id = args[0];
+              }
+
+              var requestBody = JSON.stringify({
+                action: action,
+                payload: payloadObj,
+                actor: (window.app && window.app.getActiveUser) ? window.app.getActiveUser() : 'Suami'
+              });
+
+              fetch(apiUrl, {
+                method: 'POST',
+                body: requestBody,
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                redirect: 'follow'
+              })
+              .then(function (res) {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+              })
+              .then(function (data) {
+                if (data && data.status === 'error') {
+                  self.failureFn(new Error(data.message || 'Operasi gagal'));
+                } else {
+                  self.successFn(data);
+                }
+              })
+              .catch(function (err) {
+                self.failureFn(err);
+              });
             }
           };
+
+          return new Proxy(runner, {
+            get: function (target, prop) {
+              if (prop in target) return target[prop];
+              return function () {
+                var args = Array.prototype.slice.call(arguments);
+                target._call(prop, args);
+              };
+            }
+          });
         }
 
-        GasRunner.prototype.withSuccessHandler = function (fn) {
-          return new GasRunner(fn, this.failureFn);
-        };
-
-        GasRunner.prototype.withFailureHandler = function (fn) {
-          return new GasRunner(this.successFn, fn);
-        };
-
-        GasRunner.prototype._call = function (action, args) {
-          var self = this;
-          var apiUrl = (localStorage.getItem('ruangdana_gas_api_url') || '').trim();
-          if (!apiUrl) {
-            if (window.app && window.app.openGasConfigModal) {
-              window.app.openGasConfigModal();
-            } else {
-              alert('Harap masukkan URL Web App Google Apps Script Anda agar GitHub Pages terhubung ke database spreadsheet.');
-            }
-            self.failureFn(new Error('URL Google Apps Script belum dikonfigurasi.'));
-            return;
-          }
-
-          var payloadObj = {};
-          if (args.length === 1 && typeof args[0] === 'object' && args[0] !== null && !Array.isArray(args[0])) {
-            payloadObj = args[0];
-          } else if (args.length > 0) {
-            payloadObj = { arg0: args[0], arg1: args[1], arg2: args[2], arg3: args[3], allArgs: args };
-            if (typeof args[0] === 'string' || typeof args[0] === 'number') payloadObj.id = args[0];
-          }
-
-          var requestBody = JSON.stringify({
-            action: action,
-            payload: payloadObj,
-            actor: (window.app && window.app.getActiveUser) ? window.app.getActiveUser() : 'Suami'
-          });
-
-          fetch(apiUrl, {
-            method: 'POST',
-            body: requestBody,
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            redirect: 'follow'
-          })
-          .then(function (res) {
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.json();
-          })
-          .then(function (data) {
-            if (data && data.status === 'error') {
-              self.failureFn(new Error(data.message || 'Operasi gagal'));
-            } else {
-              self.successFn(data);
-            }
-          })
-          .catch(function (err) {
-            self.failureFn(err);
-          });
-        };
-
-        var proxyHandler = {
-          get: function (target, prop) {
-            if (prop === 'withSuccessHandler') return function (fn) { return target.withSuccessHandler(fn); };
-            if (prop === 'withFailureHandler') return function (fn) { return target.withFailureHandler(fn); };
-            return function () {
-              var args = Array.prototype.slice.call(arguments);
-              target._call(prop, args);
-            };
-          }
-        };
-
-        window.google.script.run = new Proxy(new GasRunner(), proxyHandler);
+        window.google.script.run = createGasProxy();
       }
     })();
 
@@ -3788,10 +3787,12 @@
       },
 
       submitProfilePin: function () {
-        var prof = this.selectedLoginProfile;
+        var prof = this.selectedLoginProfile || 'suami';
         var pin = (document.getElementById('inputUserPin').value || '').trim();
         var errEl = document.getElementById('loginPinError');
+        var btn = document.getElementById('btnLoginSubmit');
         var self = this;
+
         if (!pin) {
           if (errEl) {
             errEl.textContent = 'Harap masukkan 4 digit PIN.';
@@ -3802,8 +3803,6 @@
 
         var isDefaultPin = (prof === 'suami' && pin === '1111') || (prof === 'istri' && pin === '2222');
         var hasGasUrl = !!(localStorage.getItem('ruangdana_gas_api_url') || '').trim();
-        var btn = document.getElementById('btnLoginSubmit');
-        if (btn) btn.disabled = true;
 
         function doLoginSuccess() {
           if (btn) btn.disabled = false;
@@ -3822,46 +3821,56 @@
           }
         }
 
-        // Buka akses langsung jika PIN default atau jika backend belum dikonfigurasi
-        if (isDefaultPin || !hasGasUrl) {
+        // Jika backend belum dikonfigurasi di GitHub Pages, buka langsung agar pengguna bisa mengisi URL
+        if (!hasGasUrl) {
           doLoginSuccess();
           return;
         }
 
-        if (typeof google !== 'undefined' && google.script && google.script.run) {
-          google.script.run
-            .withSuccessHandler(function (res) {
-              if (btn) btn.disabled = false;
-              if (res && (res.success || res.status === 'success')) {
-                doLoginSuccess();
-              } else if (isDefaultPin) {
-                doLoginSuccess();
-              } else {
-                if (errEl) {
-                  errEl.textContent = (res && res.message) || 'PIN salah. Silakan coba lagi.';
+        if (btn) btn.disabled = true;
+
+        try {
+          if (typeof google !== 'undefined' && google.script && google.script.run) {
+            google.script.run
+              .withSuccessHandler(function (res) {
+                if (btn) btn.disabled = false;
+                if (res && (res.success || res.status === 'success')) {
+                  doLoginSuccess();
+                } else {
+                  if (errEl) {
+                    errEl.textContent = (res && res.message) || 'PIN salah. Silakan coba lagi.';
+                    errEl.style.display = 'block';
+                  }
+                }
+              })
+              .withFailureHandler(function (err) {
+                if (btn) btn.disabled = false;
+                if (!hasGasUrl) {
+                  doLoginSuccess();
+                } else if (errEl) {
+                  errEl.textContent = 'Gagal validasi: ' + (err.message || err);
                   errEl.style.display = 'block';
                 }
-              }
-            })
-            .withFailureHandler(function (err) {
-              if (btn) btn.disabled = false;
-              if (isDefaultPin) {
-                doLoginSuccess();
-              } else if (errEl) {
-                errEl.textContent = 'Gagal validasi: ' + (err.message || err);
-                errEl.style.display = 'block';
-              }
-            })
-            .apiVerifyUserPin(prof, pin);
-        } else {
-          if (isDefaultPin) {
-            doLoginSuccess();
+              })
+              .apiVerifyUserPin(prof, pin);
           } else {
             if (btn) btn.disabled = false;
-            if (errEl) {
-              errEl.textContent = 'PIN salah. Silakan coba lagi.';
-              errEl.style.display = 'block';
+            if (isDefaultPin) {
+              doLoginSuccess();
+            } else {
+              if (errEl) {
+                errEl.textContent = 'PIN salah. Silakan coba lagi.';
+                errEl.style.display = 'block';
+              }
             }
+          }
+        } catch (e) {
+          if (btn) btn.disabled = false;
+          if (isDefaultPin) {
+            doLoginSuccess();
+          } else if (errEl) {
+            errEl.textContent = 'Error: ' + (e.message || e);
+            errEl.style.display = 'block';
           }
         }
       },
