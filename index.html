@@ -3563,6 +3563,13 @@
 
   <script>
     // ==========================================================================
+    // KONFIGURASI BACKEND & AI PERMANEN RUANGDANA
+    // Menghubungkan seluruh perangkat keluarga (HP Suami & HP Istri) secara otomatis
+    // ==========================================================================
+    window.DEFAULT_GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxAuH20MXpjA8DLIvcFcMDcoYdoxeh0QnprCiqNjYG6QxmgdVmo_iLUzRihsBKKk3MO/exec';
+    window.DEFAULT_GEMINI_API_KEY = '';
+
+    // ==========================================================================
     // HYBRID ADAPTER: DUAL MODE (GOOGLE APPS SCRIPT IFRAME OR GITHUB PAGES)
     // ==========================================================================
     (function () {
@@ -3589,7 +3596,7 @@
             },
             _call: function (action, args) {
               var self = this;
-              var apiUrl = (localStorage.getItem('ruangdana_gas_api_url') || '').trim();
+              var apiUrl = (localStorage.getItem('ruangdana_gas_api_url') || window.DEFAULT_GAS_API_URL || '').trim();
               if (!apiUrl) {
                 if (window.app && window.app.openGasConfigModal) {
                   window.app.openGasConfigModal();
@@ -3778,12 +3785,12 @@
 
         // Sinkronisasi nilai URL Google Apps Script ke kolom inline
         var inpUrl = document.getElementById('inputLoginGasUrl');
-        var savedUrl = localStorage.getItem('ruangdana_gas_api_url') || '';
+        var savedUrl = (localStorage.getItem('ruangdana_gas_api_url') || window.DEFAULT_GAS_API_URL || '').trim();
         if (inpUrl) inpUrl.value = savedUrl;
         var badge = document.getElementById('badgeGasConnected');
         if (badge) {
           if (savedUrl) {
-            badge.textContent = 'Terhubung ✓';
+            badge.textContent = 'Terhubung Otomatis ✓';
             badge.style.display = 'inline-block';
             badge.style.background = 'rgba(16, 185, 129, 0.2)';
             badge.style.color = 'var(--accent-emerald)';
@@ -3861,7 +3868,7 @@
         }
 
         var isDefaultPin = (prof === 'suami' && pin === '1111') || (prof === 'istri' && pin === '2222');
-        var hasGasUrl = !!(localStorage.getItem('ruangdana_gas_api_url') || '').trim();
+        var hasGasUrl = !!(localStorage.getItem('ruangdana_gas_api_url') || window.DEFAULT_GAS_API_URL || '').trim();
 
         function doLoginSuccess() {
           if (btn) btn.disabled = false;
@@ -3872,7 +3879,7 @@
           if (errEl) errEl.style.display = 'none';
 
           // Transisi mulus: jika di GitHub Pages dan URL backend belum diisi, langsung buka modal konfigurasi
-          if (window.__isGasPolyfilled && !localStorage.getItem('ruangdana_gas_api_url')) {
+          if (window.__isGasPolyfilled && !hasGasUrl) {
             self.openGasConfigModal();
           } else {
             self.loadDashboard();
@@ -4349,10 +4356,11 @@
 
         // Deteksi Lingkungan: GAS Iframe Native vs Standalone GitHub Pages
         var isGASNative = (typeof google !== 'undefined' && google.script && google.script.run && !window.__isGasPolyfilled);
+        var hasGasUrl = !!(localStorage.getItem('ruangdana_gas_api_url') || window.DEFAULT_GAS_API_URL || '').trim();
         var btnGas = document.getElementById('btnGasConfig');
         if (btnGas && isGASNative) {
           btnGas.style.display = 'none';
-        } else if (!isGASNative && !localStorage.getItem('ruangdana_gas_api_url')) {
+        } else if (!isGASNative && !hasGasUrl) {
           if (localStorage.getItem('ruangdana_user')) {
             this.openGasConfigModal();
           }
@@ -6257,7 +6265,7 @@
                 dateInp.value = new Date().toISOString().slice(0, 10);
               }
 
-              var hasKey = (localStorage.getItem('ruangdana_gemini_api_key') || '').trim();
+              var hasKey = self.getGeminiApiKey();
               if (hasKey) {
                 self.extractReceiptWithAI();
               } else {
@@ -6288,7 +6296,7 @@
               dateInp.value = new Date().toISOString().slice(0, 10);
             }
 
-            var hasKey = (localStorage.getItem('ruangdana_gemini_api_key') || '').trim();
+            var hasKey = self.getGeminiApiKey();
             if (hasKey) {
               self.extractReceiptWithAI();
             } else {
@@ -6417,8 +6425,12 @@
         this.closeModal('modalGeminiKey');
       },
 
+      getGeminiApiKey: function () {
+        return (localStorage.getItem('ruangdana_gemini_api_key') || window.DEFAULT_GEMINI_API_KEY || '').trim();
+      },
+
       updateAiEngineStatus: function () {
-        var key = (localStorage.getItem('ruangdana_gemini_api_key') || '').trim();
+        var key = this.getGeminiApiKey();
         var badge = document.getElementById('geminiKeyBadge');
         var desc = document.getElementById('geminiKeyBadgeDesc');
         if (!badge) return;
@@ -6449,7 +6461,7 @@
         var progBox = document.getElementById('ocrProgressBox');
         var progText = document.getElementById('ocrProgressText');
 
-        var geminiKey = (localStorage.getItem('ruangdana_gemini_api_key') || '').trim();
+        var geminiKey = this.getGeminiApiKey();
 
         if (btn) {
           btn.disabled = true;
@@ -8091,7 +8103,7 @@
         thread.innerHTML += '<div id="' + typingId + '" style="background:var(--bg-primary); padding:12px 14px; border-radius:12px; border:1px solid var(--border-color); font-size:0.85rem; color:var(--text-muted);"><span class="spinner"></span> 🤖 Sedang menganalisis kondisi keuangan keluarga Anda...</div>';
         thread.scrollTop = thread.scrollHeight;
 
-        var geminiKey = (localStorage.getItem('ruangdana_gemini_api_key') || '').trim();
+        var geminiKey = this.getGeminiApiKey();
 
         if (typeof google !== 'undefined' && google.script && google.script.run) {
           google.script.run
