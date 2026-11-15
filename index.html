@@ -3464,6 +3464,9 @@
         <div id="loginPinError"
           style="color: var(--accent-rose); font-size: 0.78rem; text-align: center; margin-top: 6px; display: none;">PIN
           salah, silakan coba lagi.</div>
+        <div id="loginPinHint" style="font-size: 0.75rem; color: var(--accent-blue); text-align: center; margin-top: 6px;">
+          💡 PIN Bawaan: <strong>1111</strong> (Suami) &bull; <strong>2222</strong> (Istri)
+        </div>
       </div>
 
       <div style="display: flex; gap: 10px;">
@@ -3471,6 +3474,12 @@
           style="display: none; padding: 10px 18px; font-size: 0.88rem;">Batal</button>
         <button type="button" class="btn-primary-action" id="btnLoginSubmit" style="flex: 1; justify-content: center;"
           onclick="app.submitProfilePin()">Buka Akses</button>
+      </div>
+
+      <div style="margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--border-color);">
+        <button type="button" class="btn-sm-action" onclick="app.openGasConfigModal()" style="font-size: 0.75rem; color: var(--text-muted); width: 100%;">
+          ⚙️ Atur URL Backend Google Apps Script
+        </button>
       </div>
 
     </div>
@@ -3714,19 +3723,35 @@
           return;
         }
 
+        var isDefaultPin = (prof === 'suami' && pin === '1111') || (prof === 'istri' && pin === '2222');
         var btn = document.getElementById('btnLoginSubmit');
         if (btn) btn.disabled = true;
+
+        function doLoginSuccess() {
+          if (btn) btn.disabled = false;
+          var properName = prof === 'suami' ? 'Suami' : 'Istri';
+          localStorage.setItem('ruangdana_user', properName);
+          self.applyActiveUser(properName);
+          self.closeModal('modalFamilyLogin');
+          if (errEl) errEl.style.display = 'none';
+
+          // Transisi mulus: jika di GitHub Pages dan URL backend belum diisi, langsung buka modal konfigurasi
+          if (window.__isGasPolyfilled && !localStorage.getItem('ruangdana_gas_api_url')) {
+            self.openGasConfigModal();
+          } else {
+            self.loadDashboard();
+            self.loadDropdowns();
+          }
+        }
 
         if (typeof google !== 'undefined' && google.script && google.script.run) {
           google.script.run
             .withSuccessHandler(function (res) {
               if (btn) btn.disabled = false;
               if (res && (res.success || res.status === 'success')) {
-                var properName = prof === 'suami' ? 'Suami' : 'Istri';
-                localStorage.setItem('ruangdana_user', properName);
-                self.applyActiveUser(properName);
-                self.closeModal('modalFamilyLogin');
-                if (errEl) errEl.style.display = 'none';
+                doLoginSuccess();
+              } else if (isDefaultPin) {
+                doLoginSuccess();
               } else {
                 if (errEl) {
                   errEl.textContent = (res && res.message) || 'PIN salah. Silakan coba lagi.';
@@ -3736,20 +3761,19 @@
             })
             .withFailureHandler(function (err) {
               if (btn) btn.disabled = false;
-              if (errEl) {
+              if (isDefaultPin) {
+                doLoginSuccess();
+              } else if (errEl) {
                 errEl.textContent = 'Gagal validasi: ' + (err.message || err);
                 errEl.style.display = 'block';
               }
             })
             .apiVerifyUserPin(prof, pin);
         } else {
-          if (btn) btn.disabled = false;
-          if ((prof === 'suami' && pin === '1111') || (prof === 'istri' && pin === '2222')) {
-            var properName = prof === 'suami' ? 'Suami' : 'Istri';
-            localStorage.setItem('ruangdana_user', properName);
-            self.applyActiveUser(properName);
-            self.closeModal('modalFamilyLogin');
+          if (isDefaultPin) {
+            doLoginSuccess();
           } else {
+            if (btn) btn.disabled = false;
             if (errEl) {
               errEl.textContent = 'PIN salah. Silakan coba lagi.';
               errEl.style.display = 'block';
@@ -4177,7 +4201,9 @@
         if (btnGas && isGASNative) {
           btnGas.style.display = 'none';
         } else if (!isGASNative && !localStorage.getItem('ruangdana_gas_api_url')) {
-          this.openGasConfigModal();
+          if (localStorage.getItem('ruangdana_user')) {
+            this.openGasConfigModal();
+          }
         }
 
         this.loadDashboard();
