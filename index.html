@@ -3477,8 +3477,21 @@
           onclick="app.submitProfilePin()">Buka Akses</button>
       </div>
 
-      <!-- KOTAK TEMPEL URL GOOGLE APPS SCRIPT LANGSUNG DI MODAL LOGIN -->
-      <div id="loginGasUrlBox" style="margin-top: 14px; padding: 12px; background: rgba(56, 189, 248, 0.08); border: 1px dashed var(--accent-blue); border-radius: 12px; text-align: left;">
+      <!-- INDIKATOR STATUS TERHUBUNG OTOMATIS (MUNCUL JIKA SUDAH ADA LINK) -->
+      <div id="loginGasConnectedIndicator" style="display: none; margin-top: 14px; text-align: center;">
+        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.76rem; font-weight: 600; color: var(--accent-emerald); background: rgba(16, 185, 129, 0.12); padding: 5px 14px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.3);">
+          <span style="width: 7px; height: 7px; border-radius: 50%; background: var(--accent-emerald); display: inline-block;"></span>
+          Database Spreadsheet Terhubung
+        </span>
+        <div style="margin-top: 5px;">
+          <button type="button" onclick="app.toggleLoginGasUrlBox()" style="background: none; border: none; color: var(--text-muted); font-size: 0.72rem; text-decoration: underline; cursor: pointer;">
+            ⚙️ Ubah URL Backend
+          </button>
+        </div>
+      </div>
+
+      <!-- KOTAK TEMPEL URL GOOGLE APPS SCRIPT LANGSUNG DI MODAL LOGIN (TERSEMBUNYI JIKA SUDAH TERHUBUNG) -->
+      <div id="loginGasUrlBox" style="display: none; margin-top: 14px; padding: 12px; background: rgba(56, 189, 248, 0.08); border: 1px dashed var(--accent-blue); border-radius: 12px; text-align: left;">
         <div style="font-size: 0.78rem; font-weight: 700; color: var(--accent-blue); margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
           <span>⚙️ Tempel URL Google Apps Script:</span>
           <span id="badgeGasConnected" style="font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; display: none;"></span>
@@ -3490,7 +3503,7 @@
         </div>
         <div id="gasLoginTestStatus" style="font-size: 0.72rem; margin-top: 6px; padding: 6px 8px; border-radius: 6px; display: none; line-height: 1.4;"></div>
         <small style="font-size: 0.68rem; color: var(--text-muted); display: block; margin-top: 5px; line-height: 1.3;">
-          Tempel URL Web App dari Google Sheets Anda di sini agar saldo, transaksi & grafik langsung termuat.
+          Tempel URL Web App dari Google Sheets Anda di sini jika ingin mengganti database.
         </small>
       </div>
 
@@ -3635,6 +3648,58 @@
                 }
               }
 
+              function executeJsonpFallback() {
+                if (payloadJson.length > 3500) {
+                  self.failureFn(new Error('Data terlalu besar untuk dikirim via URL GET/JSONP. Pastikan koneksi backend aktif.'));
+                  return;
+                }
+                var cbName = '__gas_cb_' + Date.now() + '_' + Math.floor(Math.random() * 1000000);
+                var script = document.createElement('script');
+                var timer = setTimeout(function () {
+                  cleanup();
+                  self.failureFn(new Error('Koneksi timeout. Pastikan Google Apps Script berstatus "Siapa saja (Anyone)".'));
+                }, 15000);
+
+                function cleanup() {
+                  clearTimeout(timer);
+                  try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+                  if (script && script.parentNode) script.parentNode.removeChild(script);
+                }
+
+                window[cbName] = function (res) {
+                  cleanup();
+                  if (res && res.status === 'error') {
+                    self.failureFn(new Error(res.message || 'Operasi gagal'));
+                  } else {
+                    self.successFn(res);
+                  }
+                };
+
+                script.onerror = function () {
+                  cleanup();
+                  self.failureFn(new Error('Failed to fetch'));
+                };
+
+                var sep = apiUrl.indexOf('?') === -1 ? '?' : '&';
+                var scriptUrl = apiUrl + sep + 'action=' + encodeURIComponent(action) +
+                                '&payload=' + encodeURIComponent(payloadJson) +
+                                '&actor=' + encodeURIComponent(actor) +
+                                '&callback=' + encodeURIComponent(cbName) +
+                                '&_t=' + Date.now();
+
+                if (typeof args[0] === 'string' || typeof args[0] === 'number') {
+                  scriptUrl += '&arg0=' + encodeURIComponent(args[0]);
+                  if (action === 'apiVerifyUserPin') scriptUrl += '&username=' + encodeURIComponent(args[0]);
+                }
+                if (typeof args[1] === 'string' || typeof args[1] === 'number') {
+                  scriptUrl += '&arg1=' + encodeURIComponent(args[1]);
+                  if (action === 'apiVerifyUserPin') scriptUrl += '&pin=' + encodeURIComponent(args[1]);
+                }
+
+                script.src = scriptUrl;
+                document.head.appendChild(script);
+              }
+
               function executePostFallback() {
                 var requestBody = JSON.stringify({
                   action: action,
@@ -3656,13 +3721,13 @@
                   processResultText(text);
                 })
                 .catch(function (err) {
-                  self.failureFn(err);
+                  executeJsonpFallback();
                 });
               }
 
               // SOLUSI TOTAL CORS GOOGLE APPS SCRIPT:
-              // Browser memblokir 302 Redirect pada permintaan POST lintas domain (CORS "Failed to fetch").
-              // Sedangkan permintaan GET dengan query parameter diizinkan 100% oleh peramban tanpa terhalang 302!
+              // 1. Coba permintaan GET tercepat dengan query parameter
+              // 2. Jika peramban memblokir redirect 302, beralih ke dynamic <script> (JSONP) yang 100% tembus di semua browser
               if (payloadJson.length < 3500) {
                 var sep = apiUrl.indexOf('?') === -1 ? '?' : '&';
                 var getUrl = apiUrl + sep + 'action=' + encodeURIComponent(action) +
@@ -3691,7 +3756,7 @@
                   processResultText(text);
                 })
                 .catch(function (getErr) {
-                  executePostFallback();
+                  executeJsonpFallback();
                 });
               } else {
                 executePostFallback();
@@ -3787,14 +3852,23 @@
         var inpUrl = document.getElementById('inputLoginGasUrl');
         var savedUrl = (localStorage.getItem('ruangdana_gas_api_url') || window.DEFAULT_GAS_API_URL || '').trim();
         if (inpUrl) inpUrl.value = savedUrl;
+        
+        var indicator = document.getElementById('loginGasConnectedIndicator');
+        var box = document.getElementById('loginGasUrlBox');
         var badge = document.getElementById('badgeGasConnected');
-        if (badge) {
-          if (savedUrl) {
+        if (savedUrl) {
+          if (indicator) indicator.style.display = 'block';
+          if (box) box.style.display = 'none';
+          if (badge) {
             badge.textContent = 'Terhubung Otomatis ✓';
             badge.style.display = 'inline-block';
             badge.style.background = 'rgba(16, 185, 129, 0.2)';
             badge.style.color = 'var(--accent-emerald)';
-          } else {
+          }
+        } else {
+          if (indicator) indicator.style.display = 'none';
+          if (box) box.style.display = 'block';
+          if (badge) {
             badge.textContent = 'Belum Terhubung';
             badge.style.display = 'inline-block';
             badge.style.background = 'rgba(244, 63, 94, 0.2)';
@@ -3803,6 +3877,12 @@
         }
 
         this.openModal('modalFamilyLogin');
+      },
+
+      toggleLoginGasUrlBox: function () {
+        var box = document.getElementById('loginGasUrlBox');
+        if (!box) return;
+        box.style.display = (box.style.display === 'none' || !box.style.display) ? 'block' : 'none';
       },
 
       saveLoginGasUrl: function () {
@@ -3911,10 +3991,14 @@
               })
               .withFailureHandler(function (err) {
                 if (btn) btn.disabled = false;
+                if (isDefaultPin) {
+                  doLoginSuccess();
+                  return;
+                }
                 if (!hasGasUrl) {
                   doLoginSuccess();
                 } else if (errEl) {
-                  errEl.textContent = 'Gagal validasi: ' + (err.message || err);
+                  errEl.innerHTML = 'Gagal validasi backend: ' + (err.message || err) + '<br><small style="color:var(--text-muted); font-size:0.7rem;">Gunakan PIN bawaan 1111 (Suami) / 2222 (Istri) atau Masuk Langsung di bawah.</small>';
                   errEl.style.display = 'block';
                 }
               })
@@ -4704,6 +4788,10 @@
           google.script.run
             .withSuccessHandler(function (data) {
               self.cache.dashboard = data;
+              if (data && data.has_gemini) {
+                window.__hasBackendGemini = true;
+                self.updateAiEngineStatus();
+              }
               self.renderDashboard(data);
             })
             .withFailureHandler(function (err) {
@@ -6207,12 +6295,47 @@
           }
         })
         .catch(function (err) {
-          if (statusEl) {
-            statusEl.innerHTML = '❌ <strong>Gagal Terhubung (CORS / Akses Ditolak):</strong> ' + err.message + '<br><small>Pastikan di Google Apps Script saat Deploy: <strong>Who has access: Anyone</strong> (bukan Only myself).</small>';
-            statusEl.style.color = 'var(--accent-rose)';
-            statusEl.style.background = 'rgba(244, 63, 94, 0.1)';
-            statusEl.style.border = '1px solid var(--accent-rose)';
+          // Coba fallback uji komunikasi via dynamic script JSONP
+          var cbName = '__gas_test_cb_' + Date.now();
+          var script = document.createElement('script');
+          var timer = setTimeout(function () {
+            cleanup();
+            if (statusEl) {
+              statusEl.innerHTML = '❌ <strong>Gagal Terhubung (CORS / Akses Ditolak):</strong> ' + err.message + '<br><small>Pastikan di Google Apps Script saat Deploy: <strong>Who has access: Anyone</strong>.</small>';
+              statusEl.style.color = 'var(--accent-rose)';
+              statusEl.style.background = 'rgba(244, 63, 94, 0.1)';
+              statusEl.style.border = '1px solid var(--accent-rose)';
+            }
+          }, 8000);
+
+          function cleanup() {
+            clearTimeout(timer);
+            try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+            if (script && script.parentNode) script.parentNode.removeChild(script);
           }
+
+          window[cbName] = function (res) {
+            cleanup();
+            if (statusEl) {
+              statusEl.innerHTML = '✅ <strong>Koneksi Berhasil!</strong> Backend Google Apps Script aktif dan terhubung sempurna ke Google Sheets.';
+              statusEl.style.color = 'var(--accent-emerald)';
+              statusEl.style.background = 'rgba(16, 185, 129, 0.1)';
+              statusEl.style.border = '1px solid var(--accent-emerald)';
+            }
+          };
+
+          script.onerror = function () {
+            cleanup();
+            if (statusEl) {
+              statusEl.innerHTML = '❌ <strong>Gagal Terhubung:</strong> ' + err.message + '<br><small>Pastikan di Google Apps Script saat Deploy: <strong>Who has access: Anyone</strong>.</small>';
+              statusEl.style.color = 'var(--accent-rose)';
+              statusEl.style.background = 'rgba(244, 63, 94, 0.1)';
+              statusEl.style.border = '1px solid var(--accent-rose)';
+            }
+          };
+
+          script.src = url + sep + 'action=apiGetDropdowns&callback=' + cbName + '&_t=' + Date.now();
+          document.head.appendChild(script);
         });
       },
 
@@ -6265,13 +6388,7 @@
                 dateInp.value = new Date().toISOString().slice(0, 10);
               }
 
-              var hasKey = self.getGeminiApiKey();
-              if (hasKey) {
-                self.extractReceiptWithAI();
-              } else {
-                var merchantInp = document.getElementById('scanMerchant');
-                if (merchantInp) merchantInp.focus();
-              }
+              self.extractReceiptWithAI();
             });
           };
           reader.readAsDataURL(files[0]);
@@ -6296,13 +6413,7 @@
               dateInp.value = new Date().toISOString().slice(0, 10);
             }
 
-            var hasKey = self.getGeminiApiKey();
-            if (hasKey) {
-              self.extractReceiptWithAI();
-            } else {
-              var merchantInp = document.getElementById('scanMerchant');
-              if (merchantInp) merchantInp.focus();
-            }
+            self.extractReceiptWithAI();
           });
         };
         reader.readAsDataURL(file);
@@ -6426,7 +6537,10 @@
       },
 
       getGeminiApiKey: function () {
-        return (localStorage.getItem('ruangdana_gemini_api_key') || window.DEFAULT_GEMINI_API_KEY || '').trim();
+        var key = (localStorage.getItem('ruangdana_gemini_api_key') || window.DEFAULT_GEMINI_API_KEY || '').trim();
+        if (key) return key;
+        if (window.__hasBackendGemini) return 'BACKEND_GEMINI_ACTIVE';
+        return '';
       },
 
       updateAiEngineStatus: function () {
@@ -6439,7 +6553,7 @@
           badge.style.background = 'rgba(16, 185, 129, 0.2)';
           badge.style.color = '#10B981';
           badge.style.border = '1px solid rgba(16, 185, 129, 0.4)';
-          badge.textContent = '🟢 Gemini Vision Aktif';
+          badge.textContent = (key === 'BACKEND_GEMINI_ACTIVE') ? '🟢 Gemini Vision Aktif (Google Cloud)' : '🟢 Gemini Vision Aktif';
           if (desc) desc.textContent = 'Google Gemini Vision (High Reasoning OCR Struk Kasir)';
         } else {
           badge.style.background = 'rgba(148, 163, 184, 0.15)';
@@ -6462,6 +6576,7 @@
         var progText = document.getElementById('ocrProgressText');
 
         var geminiKey = this.getGeminiApiKey();
+        var actualKey = (geminiKey === 'BACKEND_GEMINI_ACTIVE') ? '' : geminiKey;
 
         if (btn) {
           btn.disabled = true;
@@ -6512,7 +6627,7 @@
               var merchantInp = document.getElementById('scanMerchant');
               if (merchantInp) merchantInp.focus();
             })
-            .apiAnalyzeReceiptWithGemini(img.src, geminiKey);
+            .apiAnalyzeReceiptWithGemini(img.src, actualKey);
           return;
         }
 
@@ -8014,6 +8129,10 @@
         if (typeof google !== 'undefined' && google.script && google.script.run) {
           google.script.run.withSuccessHandler(function (res) {
             self.cache.dropdowns = res;
+            if (res && res.has_gemini) {
+              window.__hasBackendGemini = true;
+              self.updateAiEngineStatus();
+            }
             var wSel = document.getElementById('tWallet');
             var dSel = document.getElementById('tDestWallet');
             var sSel = document.getElementById('scanDompet');
@@ -8104,6 +8223,7 @@
         thread.scrollTop = thread.scrollHeight;
 
         var geminiKey = this.getGeminiApiKey();
+        var actualKey = (geminiKey === 'BACKEND_GEMINI_ACTIVE') ? '' : geminiKey;
 
         if (typeof google !== 'undefined' && google.script && google.script.run) {
           google.script.run
@@ -8129,7 +8249,7 @@
               thread.innerHTML += '<div style="background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.3); color:#F43F5E; padding:12px; border-radius:12px; font-size:0.85rem;">Gagal mendapatkan jawaban dari Asisten AI: ' + (err.message || err) + '</div>';
               thread.scrollTop = thread.scrollHeight;
             })
-            .apiAskFinancialAI(q, geminiKey);
+            .apiAskFinancialAI(q, actualKey);
         } else {
           setTimeout(function () {
             var elTyping = document.getElementById(typingId);
