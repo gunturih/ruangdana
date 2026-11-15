@@ -2614,16 +2614,17 @@
           <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 1.15rem;">🧠</span>
             <div>
-              <strong style="font-size: 0.82rem; color: var(--text-main); display: block;">Google Gemini Vision (High
-                Reasoning OCR)</strong>
-              <span style="font-size: 0.72rem; color: var(--text-muted);">Ekstraksi data struk kasir akurat, terstruktur
-                &amp; otomatis</span>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <strong style="font-size: 0.82rem; color: var(--text-main);">Google Gemini Vision</strong>
+                <span id="geminiKeyBadge" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; font-weight: 600; background: rgba(16, 185, 129, 0.2); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.4);">🟢 Gemini Vision Aktif</span>
+              </div>
+              <span id="geminiKeyBadgeDesc" style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 2px;">Ekstraksi data struk kasir akurat, terstruktur &amp; otomatis</span>
             </div>
           </div>
           <div id="geminiKeyBtnWrap">
             <button type="button" class="btn-sm-action" onclick="app.openGeminiKeyModal()"
               style="font-size: 0.75rem; padding: 5px 12px; border-color: rgba(16, 185, 129, 0.4); color: var(--accent-emerald);">
-              🔑 Kunci Gemini API
+              ⚙️ Pengaturan Kunci API
             </button>
           </div>
         </div>
@@ -4788,9 +4789,20 @@
           google.script.run
             .withSuccessHandler(function (data) {
               self.cache.dashboard = data;
-              if (data && data.has_gemini) {
+              if (data && data.gemini_api_key) {
+                localStorage.setItem('ruangdana_gemini_api_key', data.gemini_api_key);
                 window.__hasBackendGemini = true;
                 self.updateAiEngineStatus();
+              } else if (data && data.has_gemini) {
+                window.__hasBackendGemini = true;
+                self.updateAiEngineStatus();
+              } else {
+                // Jika peramban lokal (misal PC) menyimpan kunci, sinkronkan otomatis ke Cloud
+                var localKey = (localStorage.getItem('ruangdana_gemini_api_key') || window.DEFAULT_GEMINI_API_KEY || '').trim();
+                if (localKey && localKey !== 'BACKEND_GEMINI_ACTIVE') {
+                  google.script.run.apiSaveGeminiApiKey(localKey);
+                  window.__hasBackendGemini = true;
+                }
               }
               self.renderDashboard(data);
             })
@@ -6525,11 +6537,24 @@
       saveGeminiKey: function () {
         var input = document.getElementById('inpGeminiKey');
         var key = input ? input.value.trim() : '';
+        var self = this;
         if (key) {
           localStorage.setItem('ruangdana_gemini_api_key', key);
-          alert('✅ Kunci API Gemini berhasil disimpan!\nSistem kini menggunakan Google Gemini Vision untuk menganalisis nota kasir secara cerdas.');
+          window.__hasBackendGemini = true;
+          if (typeof google !== 'undefined' && google.script && google.script.run) {
+            google.script.run
+              .withSuccessHandler(function (res) {
+                if (self.showToast) self.showToast('✅ Kunci Gemini API berhasil disimpan ke Cloud! Seluruh HP keluarga otomatis aktif.', 'success');
+              })
+              .apiSaveGeminiApiKey(key);
+          }
+          alert('✅ Kunci API Gemini berhasil disimpan!\nSistem otomatis menyinkronkan kunci ini ke Google Cloud sehingga HP Suami & HP Istri langsung aktif tanpa memasukkan kunci lagi.');
         } else {
           localStorage.removeItem('ruangdana_gemini_api_key');
+          window.__hasBackendGemini = false;
+          if (typeof google !== 'undefined' && google.script && google.script.run) {
+            google.script.run.apiSaveGeminiApiKey('');
+          }
           alert('ℹ️ Kunci API Gemini dihapus.');
         }
         this.updateAiEngineStatus();
@@ -6564,9 +6589,10 @@
         }
       },
 
-      extractReceiptWithAI: function () {
+      extractReceiptWithAI: function (optionalImgSrc) {
         var img = document.getElementById('imgReceiptPreview');
-        if (!img || !img.src || img.src === window.location.href) {
+        var targetSrc = optionalImgSrc || (img ? img.src : '');
+        if (!targetSrc || targetSrc === window.location.href) {
           alert('Silakan pilih, jepret, atau tempel foto nota terlebih dahulu.');
           return;
         }
@@ -6601,9 +6627,9 @@
               if (res && (res.success || res.status === 'success') && res.data) {
                 self.populateReceiptFormFromAI(res.data, (res.ai_engine || 'Google Gemini Vision (High Reasoning)'));
               } else if (res && res.status === 'no_key') {
-                var wantSetup = confirm('🔑 Kunci API Gemini Belum Terpasang di Sistem.\n\n' +
-                  'Untuk mengaktifkan pembacaan struk otomatis dengan AI Vision multimodal, Anda dapat memasang Kunci API Gemini gratis (didapat dari Google AI Studio).\n\n' +
-                  '• Klik OK untuk memasukkan Kunci API Gemini gratis\n' +
+                var wantSetup = confirm('🔑 Kunci API Gemini Belum Terpasang di Google Cloud.\n\n' +
+                  'Untuk mengaktifkan pembacaan struk otomatis di seluruh HP keluarga, Anda dapat memasang Kunci API Gemini gratis (didapat dari Google AI Studio).\n\n' +
+                  '• Klik OK untuk memasukkan Kunci API Gemini\n' +
                   '• Klik Batal untuk langsung mengisi formulir');
                 if (wantSetup) {
                   self.openGeminiKeyModal();
@@ -6627,7 +6653,7 @@
               var merchantInp = document.getElementById('scanMerchant');
               if (merchantInp) merchantInp.focus();
             })
-            .apiAnalyzeReceiptWithGemini(img.src, actualKey);
+            .apiAnalyzeReceiptWithGemini(targetSrc, actualKey);
           return;
         }
 
@@ -8129,7 +8155,11 @@
         if (typeof google !== 'undefined' && google.script && google.script.run) {
           google.script.run.withSuccessHandler(function (res) {
             self.cache.dropdowns = res;
-            if (res && res.has_gemini) {
+            if (res && res.gemini_api_key) {
+              localStorage.setItem('ruangdana_gemini_api_key', res.gemini_api_key);
+              window.__hasBackendGemini = true;
+              self.updateAiEngineStatus();
+            } else if (res && res.has_gemini) {
               window.__hasBackendGemini = true;
               self.updateAiEngineStatus();
             }
