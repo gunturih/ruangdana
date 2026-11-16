@@ -1819,6 +1819,7 @@
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                   <button type="button" class="btn-sm-action" onclick="app.resetTxnFilters()">Reset</button>
+                  <button type="button" class="btn-sm-action" style="color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.4);" onclick="app.cleanupEmptyTransactions()" title="Hapus transaksi kosong tanpa nominal / cacat">🧹 Bersihkan Baris Kosong</button>
                   <button type="button" class="btn-primary-action"
                     style="background: #10B981; color: white; padding: 7px 16px; font-size: 0.8rem;"
                     onclick="app.exportTxnExcel()" title="Export ke Excel dengan Kolom-Kolom Terpisah">📥 Export Excel
@@ -3622,14 +3623,29 @@
               }
 
               var payloadObj = {};
+              var actor = (window.app && window.app.getActiveUser) ? window.app.getActiveUser() : 'Suami';
+
               if (args.length === 1 && typeof args[0] === 'object' && args[0] !== null && !Array.isArray(args[0])) {
                 payloadObj = args[0];
+              } else if (args.length > 1 && typeof args[0] === 'object' && args[0] !== null && !Array.isArray(args[0])) {
+                // Skenario GAS API: runner.apiSaveTransaction(payload, activeActor)
+                // Salin seluruh properti payload ke root level agar data tidak terdistorsi
+                payloadObj = Object.assign({}, args[0]);
+                if (typeof args[1] === 'string' && args[1].trim()) {
+                  actor = args[1].trim();
+                  payloadObj.actor = actor;
+                }
+                payloadObj.arg0 = args[0];
+                payloadObj.arg1 = args[1];
               } else if (args.length > 0) {
                 payloadObj = { arg0: args[0], arg1: args[1], arg2: args[2], arg3: args[3], allArgs: args };
                 if (typeof args[0] === 'string' || typeof args[0] === 'number') payloadObj.id = args[0];
+                if (typeof args[1] === 'string' && args[1].trim()) {
+                  actor = args[1].trim();
+                  payloadObj.actor = actor;
+                }
               }
 
-              var actor = (window.app && window.app.getActiveUser) ? window.app.getActiveUser() : 'Suami';
               var payloadJson = JSON.stringify(payloadObj);
 
               function processResultText(text) {
@@ -4756,6 +4772,23 @@
             .apiClearDemoData('User');
         } else {
           alert('Demo mode: Data demo dibersihkan.');
+        }
+      },
+
+      cleanupEmptyTransactions: function () {
+        if (!confirm('Bersihkan baris transaksi kosong yang tidak memiliki tipe dan bernominal Rp 0?')) return;
+        var self = this;
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              self.showToast(res.message || 'Transaksi kosong dibersihkan!', 'success');
+              self.loadDashboard();
+              if (self.currentView === 'transactions') self.loadTransactions();
+            })
+            .withFailureHandler(function (err) {
+              self.showToast('Gagal: ' + (err.message || err), 'error');
+            })
+            .apiCleanupEmptyTransactions(self.getActiveUser());
         }
       },
 
@@ -6050,6 +6083,17 @@
         };
         if (isEdit) {
           payload.id = editId;
+        }
+
+        if (!payload.amount || payload.amount <= 0) {
+          this.showToast('Mohon masukkan nominal transaksi yang valid (lebih dari 0).', 'error');
+          this.unlockSubmit(btn);
+          return;
+        }
+        if (!payload.wallet_id) {
+          this.showToast('Mohon pilih dompet sumber transaksi.', 'error');
+          this.unlockSubmit(btn);
+          return;
         }
 
         var activeActor = this.getActiveUser();
