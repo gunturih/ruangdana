@@ -1566,7 +1566,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
           </svg>
-          <span>🌙 Zakat & Filantropi</span>
+          <span>Zakat & Filantropi</span>
         </a>
         <a class="nav-item" data-view="asset-snapshot">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1657,20 +1657,6 @@
                 📷 Scan Nota AI
               </button>
             </div>
-          </div>
-
-          <!-- Shortcut Banner Zakat & Filantropi -->
-          <div style="background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(6,95,70,0.18)); border: 1px solid rgba(16,185,129,0.3); border-radius: 14px; padding: 12px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 1.4rem;">🌙</span>
-              <div>
-                <span style="font-weight: 700; color: #10B981; font-size: 0.92rem;">Modul Zakat & Filantropi Keluarga (Standar Fiqh BAZNAS)</span>
-                <div style="font-size: 0.78rem; color: var(--text-muted);">Kalkulator Zakat Mal (Nisab 85 gr Emas), Hitung Mundur Ramadan, & Pelacak Anti Bayar Ganda.</div>
-              </div>
-            </div>
-            <button class="btn-accent-blue" style="background: #10B981; padding: 7px 14px; font-size: 0.8rem; border-radius: 8px; cursor: pointer;" onclick="app.switchView('zakat')">
-              Buka Menu Zakat &rarr;
-            </button>
           </div>
 
           <div class="metric-grid">
@@ -2550,6 +2536,11 @@
                   <button type="button" class="switch-pill" id="btnHaulYearEnd" onclick="app.setHaulMode('yearend')">🗓️ Akhir Tahun (31 Des)</button>
                   <button type="button" class="switch-pill" id="btnHaulCustom" onclick="app.setHaulMode('custom')">⚙️ Tanggal Kustom</button>
                 </div>
+                <div id="wrapZakatCustomDate" style="display: none; margin-top: 10px; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span style="font-size: 0.78rem; color: var(--text-muted);">Pilih Tanggal Haul:</span>
+                  <input type="date" id="inpZakatCustomDate" class="form-input" style="padding: 5px 10px; font-size: 0.8rem; width: auto; font-weight: 600;" onchange="app.onZakatCustomDateChange(this.value)">
+                  <button type="button" class="btn-sm-action" onclick="app.applyCustomZakatDate()" style="font-size: 0.75rem; padding: 5px 10px; background: var(--accent-blue); color: white; border: none; border-radius: 6px; cursor: pointer;">Hitung</button>
+                </div>
               </div>
               <div style="flex: 1; min-width: 260px;">
                 <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 8px;">2. Harga Emas Acuan (Nisab 85 Gram)</label>
@@ -3281,28 +3272,29 @@
   </div>
 
   <!-- ========================================================================
-       MODAL 11: PENGATURAN KUNCI GEMINI AI VISION
+       MODAL 11: PENGATURAN KUNCI GEMINI AI VISION & ADVISOR
        ======================================================================== -->
   <div class="modal-overlay" id="modalGeminiKey">
-    <div class="modal-content" style="max-width: 500px;">
-      <h3 style="margin-bottom: 12px; font-weight: 800;">🔑 Kunci API Gemini Vision (AI Multimodal)</h3>
+    <div class="modal-content" style="max-width: 520px;">
+      <h3 style="margin-bottom: 12px; font-weight: 800;">🔑 Kunci API Google Gemini (AI Advisor & Vision)</h3>
       <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.5; margin-bottom: 14px;">
-        Dengan memasang API Key Gemini, foto nota belanja Anda akan dianalisis langsung oleh <strong>Google Gemini Flash
-          Vision</strong> yang memahami makna visual struk kasir (mendeteksi diskon, nama toko, tanggal, rincian barang,
-        dan nominal bersih secara presisi 100%).
+        Dengan memasang API Key resmi dari Google AI Studio, fitur <strong>Percakapan Bebas Asisten AI</strong> dan <strong>Scan Nota Cerdas (Vision)</strong> akan aktif 100% menggunakan model Google Gemini.
       </p>
       <div class="form-group" style="margin-bottom: 12px;">
         <label class="form-label">Kunci API Gemini (Google AI Studio)</label>
-        <input type="password" class="form-input" id="inpGeminiKey" placeholder="Tempel kunci AIzaSy... atau AQ.Ab... di sini">
+        <input type="password" class="form-input" id="inpGeminiKey" placeholder="Tempel kunci resmi berawalan AIzaSy... di sini" oninput="app.onGeminiKeyInput(this.value)">
         <small style="color: var(--accent-blue); font-size: 0.75rem; display: block; margin-top: 6px;">
-          💡 Belum punya? <a href="https://aistudio.google.com/app/apikey" target="_blank"
-            style="color: var(--accent-blue); text-decoration: underline;">Klik di sini untuk membuat kunci gratis di
-            Google AI Studio (1 menit)</a>. Kunci disimpan aman di browser Anda.
+          💡 <strong>Belum punya kunci resmi?</strong> Buat gratis dalam 1 menit di <a href="https://aistudio.google.com/app/apikey" target="_blank"
+            style="color: var(--accent-blue); text-decoration: underline; font-weight: 700;">Google AI Studio</a>. Format kunci resmi selalu berawalan <code>AIzaSy...</code> (39 karakter).
         </small>
+        <div id="geminiKeyStatusBox" style="margin-top: 10px; display: none; padding: 10px 12px; border-radius: 8px; font-size: 0.8rem; line-height: 1.4;"></div>
       </div>
-      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
-        <button type="button" class="btn-sm-action" onclick="app.closeModal('modalGeminiKey')">Tutup</button>
-        <button type="button" class="btn-accent-blue" onclick="app.saveGeminiKey()">Simpan Kunci</button>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px;">
+        <button type="button" class="btn-sm-action" onclick="app.testGeminiKey()" id="btnTestGemini">⚡ Uji Sambungan</button>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn-sm-action" onclick="app.closeModal('modalGeminiKey')">Tutup</button>
+          <button type="button" class="btn-accent-blue" onclick="app.saveGeminiKey()">Simpan Kunci</button>
+        </div>
       </div>
     </div>
   </div>
@@ -6776,13 +6768,120 @@
       },
 
       // ========================================================================
-      // GOOGLE GEMINI FLASH VISION RECEIPT SCANNING
+      // GOOGLE GEMINI FLASH VISION RECEIPT SCANNING & AI ADVISOR
       // ========================================================================
       openGeminiKeyModal: function () {
         var existingKey = localStorage.getItem('ruangdana_gemini_api_key') || '';
         var input = document.getElementById('inpGeminiKey');
-        if (input) input.value = existingKey;
+        if (input) {
+          input.value = existingKey;
+          this.onGeminiKeyInput(existingKey);
+        }
         this.openModal('modalGeminiKey');
+      },
+
+      onGeminiKeyInput: function (val) {
+        var box = document.getElementById('geminiKeyStatusBox');
+        if (!box) return;
+        var cleanVal = (val || '').trim();
+        if (!cleanVal) {
+          box.style.display = 'none';
+          return;
+        }
+        box.style.display = 'block';
+        if (cleanVal.startsWith('AIza')) {
+          box.style.background = 'rgba(16, 185, 129, 0.15)';
+          box.style.color = '#10B981';
+          box.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+          box.innerHTML = '✅ <strong>Format Valid:</strong> Kunci sesuai standar resmi Google AI Studio (berawalan <code>AIzaSy...</code>). Klik tombol <strong>⚡ Uji Sambungan</strong> untuk memverifikasi ke server Google.';
+        } else if (cleanVal.startsWith('AQ.')) {
+          box.style.background = 'rgba(239, 68, 68, 0.15)';
+          box.style.color = '#F87171';
+          box.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+          box.innerHTML = '⚠️ <strong>Perhatian:</strong> Kunci diawali <code>AQ.</code>. Ini bukan Kunci API Google Gemini. Server Google akan menolaknya dengan <strong>HTTP 404/400 (Not Found)</strong>.<br>Silakan buat Kunci API resmi gratis di <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #60A5FA; text-decoration: underline; font-weight: bold;">Google AI Studio</a> (format resmi selalu diawali <code>AIzaSy...</code>).';
+        } else {
+          box.style.background = 'rgba(245, 158, 11, 0.15)';
+          box.style.color = '#F59E0B';
+          box.style.border = '1px solid rgba(245, 158, 11, 0.3)';
+          box.innerHTML = 'ℹ️ Kunci resmi Google Gemini umumnya diawali dengan <code>AIzaSy...</code> (39 karakter). Silakan klik <strong>⚡ Uji Sambungan</strong> untuk menguji apakah diterima oleh server Google.';
+        }
+      },
+
+      testGeminiKey: function () {
+        var input = document.getElementById('inpGeminiKey');
+        var key = input ? input.value.trim() : '';
+        var box = document.getElementById('geminiKeyStatusBox');
+        var btn = document.getElementById('btnTestGemini');
+        var self = this;
+
+        if (!key) {
+          if (box) {
+            box.style.display = 'block';
+            box.style.background = 'rgba(245, 158, 11, 0.15)';
+            box.style.color = '#F59E0B';
+            box.style.border = '1px solid rgba(245, 158, 11, 0.3)';
+            box.innerHTML = '⚠️ Masukkan kunci API terlebih dahulu.';
+          }
+          return;
+        }
+
+        if (box) {
+          box.style.display = 'block';
+          box.style.background = 'rgba(56, 189, 248, 0.15)';
+          box.style.color = '#38BDF8';
+          box.style.border = '1px solid rgba(56, 189, 248, 0.3)';
+          box.innerHTML = '⏳ <em>Menghubungi server Google Cloud Gemini API... mohon tunggu sebentar...</em>';
+        }
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = '⏳ Menguji...';
+        }
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              if (btn) { btn.disabled = false; btn.textContent = '⚡ Uji Sambungan'; }
+              if (!box) return;
+              if (res && res.success) {
+                box.style.background = 'rgba(16, 185, 129, 0.15)';
+                box.style.color = '#10B981';
+                box.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+                box.innerHTML = '🎉 ' + (res.message || 'Koneksi Berhasil! Gemini AI aktif.');
+              } else {
+                box.style.background = 'rgba(239, 68, 68, 0.15)';
+                box.style.color = '#F87171';
+                box.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                box.innerHTML = '❌ ' + (res && res.message ? res.message : 'Koneksi gagal ditolak oleh Google.');
+              }
+            })
+            .withFailureHandler(function (err) {
+              if (btn) { btn.disabled = false; btn.textContent = '⚡ Uji Sambungan'; }
+              if (box) {
+                box.style.background = 'rgba(239, 68, 68, 0.15)';
+                box.style.color = '#F87171';
+                box.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                box.innerHTML = '❌ Gagal memanggil fungsi Apps Script: ' + (err.message || err);
+              }
+            })
+            .apiTestGeminiKey(key);
+        } else {
+          // Demo / Client Mode tanpa backend
+          setTimeout(function () {
+            if (btn) { btn.disabled = false; btn.textContent = '⚡ Uji Sambungan'; }
+            if (!box) return;
+            if (key.startsWith('AIza')) {
+              box.style.background = 'rgba(16, 185, 129, 0.15)';
+              box.style.color = '#10B981';
+              box.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+              box.innerHTML = '✅ Format Kunci Valid (AIzaSy...). Di lingkungan web app, sistem akan langsung menghubungkan kunci ini ke Google Cloud.';
+            } else {
+              box.style.background = 'rgba(239, 68, 68, 0.15)';
+              box.style.color = '#F87171';
+              box.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+              box.innerHTML = '❌ Kunci bukan format resmi Google AI Studio (AIzaSy...). Pastikan ambil dari https://aistudio.google.com/app/apikey.';
+            }
+          }, 600);
+        }
       },
 
       saveGeminiKey: function () {
@@ -6790,16 +6889,20 @@
         var key = input ? input.value.trim() : '';
         var self = this;
         if (key) {
+          if (key.startsWith('AQ.')) {
+            var proceed = confirm('⚠️ Perhatian: Kunci Anda diawali "AQ." yang bukan format resmi Google Gemini (AIzaSy...).\n\nKunci ini kemungkinan besar akan ditolak server Google dengan status 404/400.\n\nApakah Anda tetap ingin menyimpannya?');
+            if (!proceed) return;
+          }
           localStorage.setItem('ruangdana_gemini_api_key', key);
           window.__hasBackendGemini = true;
           if (typeof google !== 'undefined' && google.script && google.script.run) {
             google.script.run
               .withSuccessHandler(function (res) {
-                if (self.showToast) self.showToast('✅ Kunci Gemini API berhasil disimpan ke Cloud! Seluruh HP keluarga otomatis aktif.', 'success');
+                if (self.showToast) self.showToast('✅ Kunci Gemini API berhasil disinkronkan ke Cloud!', 'success');
               })
               .apiSaveGeminiApiKey(key);
           }
-          alert('✅ Kunci API Gemini berhasil disimpan!\nSistem otomatis menyinkronkan kunci ini ke Google Cloud sehingga HP Suami & HP Istri langsung aktif tanpa memasukkan kunci lagi.');
+          alert('✅ Kunci API Gemini berhasil disimpan!\nSistem otomatis menyinkronkan kunci ini ke Google Cloud sehingga HP Suami & HP Istri langsung aktif.');
         } else {
           localStorage.removeItem('ruangdana_gemini_api_key');
           window.__hasBackendGemini = false;
@@ -6824,9 +6927,15 @@
         var badge = document.getElementById('geminiKeyBadge');
         var desc = document.getElementById('geminiKeyBadgeDesc');
         var chatBadge = document.getElementById('aiChatEngineBadge');
+        var isInvalidAq = key && key.startsWith('AQ.');
 
         if (chatBadge) {
-          if (key) {
+          if (isInvalidAq) {
+            chatBadge.style.background = 'rgba(239, 68, 68, 0.15)';
+            chatBadge.style.color = '#F87171';
+            chatBadge.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+            chatBadge.textContent = '⚠️ Format Kunci Keliru (AQ.Ab...)';
+          } else if (key) {
             chatBadge.style.background = 'rgba(16, 185, 129, 0.15)';
             chatBadge.style.color = '#10B981';
             chatBadge.style.border = '1px solid rgba(16, 185, 129, 0.3)';
@@ -6841,7 +6950,13 @@
 
         if (!badge) return;
 
-        if (key) {
+        if (isInvalidAq) {
+          badge.style.background = 'rgba(239, 68, 68, 0.15)';
+          badge.style.color = '#F87171';
+          badge.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+          badge.textContent = '⚠️ Kunci Perlu Diganti (Format AQ)';
+          if (desc) desc.textContent = 'Ganti kunci dengan format AIzaSy... dari Google AI Studio';
+        } else if (key) {
           badge.style.background = 'rgba(16, 185, 129, 0.2)';
           badge.style.color = '#10B981';
           badge.style.border = '1px solid rgba(16, 185, 129, 0.4)';
@@ -8563,10 +8678,8 @@
                 .replace(/\n/g, '<br>');
 
               var engineBadge = res.engine ? ' <span style="font-size:0.7rem; font-weight:normal; background:rgba(16,185,129,0.2); color:#10B981; padding:2px 6px; border-radius:6px;">' + res.engine + '</span>' : '';
-              var noticeHtml = res.gemini_notice ? '<div style="margin-bottom:10px; font-size:0.78rem; color:#F59E0B; background:rgba(245,158,11,0.1); padding:8px 12px; border-radius:8px; border:1px solid rgba(245,158,11,0.25); line-height:1.4;">' + res.gemini_notice + '</div>' : '';
 
               thread.innerHTML += '<div style="background:var(--bg-primary); padding:14px; border-radius:12px; border:1px solid var(--border-color); font-size:0.88rem; line-height:1.5;">' +
-                noticeHtml +
                 '<strong>🤖 Asisten AI:' + engineBadge + '</strong><br>' + faktaText +
                 (res.saran ? '<div style="margin-top:10px; padding-top:8px; border-top:1px dashed var(--border-color); color:var(--accent-emerald); font-size:0.82rem;">💡 <em>' + res.saran + '</em></div>' : '') +
                 '</div>';
@@ -8645,17 +8758,64 @@
           var b = document.getElementById(id);
           if (b) b.classList.remove('active');
         });
+        var wrapCustom = document.getElementById('wrapZakatCustomDate');
+        var inpCustom = document.getElementById('inpZakatCustomDate');
+        var elCountDays = document.getElementById('zakatCountdownDays');
+        var elCountTitle = document.getElementById('zakatCountdownTitle');
+        var elCountDesc = document.getElementById('zakatCountdownDesc');
+        var hInfo = this.getHijriDateInfo();
+
         if (mode === 'ramadan') {
           var b1 = document.getElementById('btnHaulRamadan');
           if (b1) b1.classList.add('active');
+          if (wrapCustom) wrapCustom.style.display = 'none';
+          if (elCountTitle) elCountTitle.textContent = 'Menuju Bulan Suci Ramadan 1448 H';
+          if (elCountDesc) elCountDesc.textContent = 'Momentum paling utama dan penuh berkah untuk menunaikan Zakat Mal & Zakat Fitrah tahunan.';
+          if (elCountDays) elCountDays.textContent = hInfo.isRamadan ? '🌙 RAMADAN' : ('~' + hInfo.daysToRamadan + ' Hari');
+          this.customZakatDate = null;
+          this.recalcZakatUI();
         } else if (mode === 'yearend') {
           var b2 = document.getElementById('btnHaulYearEnd');
           if (b2) b2.classList.add('active');
+          if (wrapCustom) wrapCustom.style.display = 'none';
+          if (elCountTitle) elCountTitle.textContent = 'Patokan Haul Tutup Buku (31 Desember)';
+          if (elCountDesc) elCountDesc.textContent = 'Perhitungan kewajiban Zakat Mal berbasis tahun kalender Masehi (365 hari kepemilikan).';
+          var now = new Date();
+          var endYear = new Date(now.getFullYear(), 11, 31);
+          var diffDays = Math.max(0, Math.ceil((endYear - now) / (1000 * 60 * 60 * 24)));
+          if (elCountDays) elCountDays.textContent = '~' + diffDays + ' Hari';
+          this.customZakatDate = null;
+          this.recalcZakatUI();
         } else {
           var b3 = document.getElementById('btnHaulCustom');
           if (b3) b3.classList.add('active');
+          if (wrapCustom) wrapCustom.style.display = 'flex';
+          if (inpCustom && !inpCustom.value) {
+            inpCustom.value = new Date().toISOString().slice(0, 10);
+          }
+          if (elCountTitle) elCountTitle.textContent = 'Patokan Haul Tanggal Kustom';
+          if (elCountDesc) elCountDesc.textContent = 'Menghitung posisi saldo harta pada tanggal haul pilihan Anda.';
+          if (inpCustom) {
+            if (elCountDays) elCountDays.textContent = inpCustom.value;
+            this.onZakatCustomDateChange(inpCustom.value);
+          }
         }
-        this.recalcZakatUI();
+      },
+
+      onZakatCustomDateChange: function (dateStr) {
+        if (!dateStr) return;
+        this.customZakatDate = dateStr;
+        var elCountDays = document.getElementById('zakatCountdownDays');
+        if (elCountDays) elCountDays.textContent = dateStr;
+      },
+
+      applyCustomZakatDate: function () {
+        var inp = document.getElementById('inpZakatCustomDate');
+        if (inp && inp.value) {
+          this.customZakatDate = inp.value;
+          this.showToast('Memuat saldo posisi per ' + inp.value + '...', 'info');
+          this.loadZakat(true);
+        }
       },
 
       resetGoldPrice: function () {
@@ -8692,6 +8852,8 @@
         }
 
         var goldPrice = inpGold ? Number(inpGold.value) || 1500000 : 1500000;
+        var targetDateParam = (self.haulMode === 'custom' && self.customZakatDate) ? self.customZakatDate : null;
+
         if (typeof google !== 'undefined' && google.script && google.script.run) {
           google.script.run
             .withSuccessHandler(function (res) {
@@ -8702,7 +8864,7 @@
               console.error('Gagal memuat data zakat:', err);
               self.renderZakatLocal(goldPrice);
             })
-            .apiGetZakatData(goldPrice, self.haulMode);
+            .apiGetZakatData(goldPrice, self.haulMode, targetDateParam);
         } else {
           self.renderZakatLocal(goldPrice);
         }
