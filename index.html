@@ -2536,10 +2536,10 @@
                   <button type="button" class="switch-pill" id="btnHaulYearEnd" onclick="app.setHaulMode('yearend')">🗓️ Akhir Tahun (31 Des)</button>
                   <button type="button" class="switch-pill" id="btnHaulCustom" onclick="app.setHaulMode('custom')">⚙️ Tanggal Kustom</button>
                 </div>
-                <div id="wrapZakatCustomDate" style="display: none; margin-top: 10px; align-items: center; gap: 8px; flex-wrap: wrap;">
-                  <span style="font-size: 0.78rem; color: var(--text-muted);">Pilih Tanggal Haul:</span>
-                  <input type="date" id="inpZakatCustomDate" class="form-input" style="padding: 5px 10px; font-size: 0.8rem; width: auto; font-weight: 600;" onchange="app.onZakatCustomDateChange(this.value)">
-                  <button type="button" class="btn-sm-action" onclick="app.applyCustomZakatDate()" style="font-size: 0.75rem; padding: 5px 10px; background: var(--accent-blue); color: white; border: none; border-radius: 6px; cursor: pointer;">Hitung</button>
+                <div id="wrapZakatCustomDate" style="display: none; margin-top: 12px; align-items: center; gap: 8px; flex-wrap: wrap; background: rgba(56, 189, 248, 0.08); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(56, 189, 248, 0.25);">
+                  <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-blue);">📅 Pilih Tanggal Haul:</span>
+                  <input type="date" id="inpZakatCustomDate" class="form-input" style="padding: 6px 10px; font-size: 0.85rem; width: auto; font-weight: 700; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--accent-blue);" onchange="app.onZakatCustomDateChange(this.value)">
+                  <button type="button" class="btn-sm-action" onclick="app.applyCustomZakatDate()" style="font-size: 0.78rem; padding: 6px 14px; background: var(--accent-blue); color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">🔍 Hitung Posisi Saldo</button>
                 </div>
               </div>
               <div style="flex: 1; min-width: 260px;">
@@ -8790,15 +8790,15 @@
           var b3 = document.getElementById('btnHaulCustom');
           if (b3) b3.classList.add('active');
           if (wrapCustom) wrapCustom.style.display = 'flex';
-          if (inpCustom && !inpCustom.value) {
-            inpCustom.value = new Date().toISOString().slice(0, 10);
+          if (inpCustom) {
+            if (!inpCustom.value) {
+              inpCustom.value = new Date().toISOString().slice(0, 10);
+            }
+            this.customZakatDate = inpCustom.value;
+            if (elCountDays) elCountDays.textContent = inpCustom.value;
           }
           if (elCountTitle) elCountTitle.textContent = 'Patokan Haul Tanggal Kustom';
-          if (elCountDesc) elCountDesc.textContent = 'Menghitung posisi saldo harta pada tanggal haul pilihan Anda.';
-          if (inpCustom) {
-            if (elCountDays) elCountDays.textContent = inpCustom.value;
-            this.onZakatCustomDateChange(inpCustom.value);
-          }
+          if (elCountDesc) elCountDesc.textContent = 'Pilih tanggal di masa lalu atau tanggal khusus untuk menghitung posisi saldo harta.';
         }
       },
 
@@ -8807,13 +8807,15 @@
         this.customZakatDate = dateStr;
         var elCountDays = document.getElementById('zakatCountdownDays');
         if (elCountDays) elCountDays.textContent = dateStr;
+        this.applyCustomZakatDate();
       },
 
       applyCustomZakatDate: function () {
         var inp = document.getElementById('inpZakatCustomDate');
-        if (inp && inp.value) {
-          this.customZakatDate = inp.value;
-          this.showToast('Memuat saldo posisi per ' + inp.value + '...', 'info');
+        var targetDate = (inp && inp.value) ? inp.value : this.customZakatDate;
+        if (targetDate) {
+          this.customZakatDate = targetDate;
+          this.showToast('Memuat posisi saldo per ' + targetDate + '...', 'info');
           this.loadZakat(true);
         }
       },
