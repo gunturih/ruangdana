@@ -6802,22 +6802,10 @@
           return;
         }
         box.style.display = 'block';
-        if (cleanVal.startsWith('AIza')) {
-          box.style.background = 'rgba(16, 185, 129, 0.15)';
-          box.style.color = '#10B981';
-          box.style.border = '1px solid rgba(16, 185, 129, 0.3)';
-          box.innerHTML = '✅ <strong>Format Valid:</strong> Kunci sesuai standar resmi Google AI Studio (berawalan <code>AIzaSy...</code>). Klik tombol <strong>⚡ Uji Sambungan</strong> untuk memverifikasi ke server Google.';
-        } else if (cleanVal.startsWith('AQ.')) {
-          box.style.background = 'rgba(239, 68, 68, 0.15)';
-          box.style.color = '#F87171';
-          box.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-          box.innerHTML = '⚠️ <strong>Perhatian:</strong> Kunci diawali <code>AQ.</code>. Ini bukan Kunci API Google Gemini. Server Google akan menolaknya dengan <strong>HTTP 404/400 (Not Found)</strong>.<br>Silakan buat Kunci API resmi gratis di <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #60A5FA; text-decoration: underline; font-weight: bold;">Google AI Studio</a> (format resmi selalu diawali <code>AIzaSy...</code>).';
-        } else {
-          box.style.background = 'rgba(245, 158, 11, 0.15)';
-          box.style.color = '#F59E0B';
-          box.style.border = '1px solid rgba(245, 158, 11, 0.3)';
-          box.innerHTML = 'ℹ️ Kunci resmi Google Gemini umumnya diawali dengan <code>AIzaSy...</code> (39 karakter). Silakan klik <strong>⚡ Uji Sambungan</strong> untuk menguji apakah diterima oleh server Google.';
-        }
+        box.style.background = 'rgba(56, 189, 248, 0.12)';
+        box.style.color = '#38BDF8';
+        box.style.border = '1px solid rgba(56, 189, 248, 0.3)';
+        box.innerHTML = '🔑 <strong>Kunci Terdeteksi:</strong> Panjang ' + cleanVal.length + ' karakter. Klik tombol <strong>⚡ Uji Sambungan</strong> di bawah untuk menguji ke server Google secara riil.';
       },
 
       testGeminiKey: function () {
@@ -6882,17 +6870,10 @@
           setTimeout(function () {
             if (btn) { btn.disabled = false; btn.textContent = '⚡ Uji Sambungan'; }
             if (!box) return;
-            if (key.startsWith('AIza')) {
-              box.style.background = 'rgba(16, 185, 129, 0.15)';
-              box.style.color = '#10B981';
-              box.style.border = '1px solid rgba(16, 185, 129, 0.3)';
-              box.innerHTML = '✅ Format Kunci Valid (AIzaSy...). Di lingkungan web app, sistem akan langsung menghubungkan kunci ini ke Google Cloud.';
-            } else {
-              box.style.background = 'rgba(239, 68, 68, 0.15)';
-              box.style.color = '#F87171';
-              box.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-              box.innerHTML = '❌ Kunci bukan format resmi Google AI Studio (AIzaSy...). Pastikan ambil dari https://aistudio.google.com/app/apikey.';
-            }
+            box.style.background = 'rgba(56, 189, 248, 0.15)';
+            box.style.color = '#38BDF8';
+            box.style.border = '1px solid rgba(56, 189, 248, 0.3)';
+            box.innerHTML = 'ℹ️ Di lingkungan Google Apps Script, tombol ini akan langsung memverifikasi kunci ke endpoint Google Generative Language API.';
           }, 600);
         }
       },
@@ -6902,10 +6883,6 @@
         var key = input ? input.value.trim() : '';
         var self = this;
         if (key) {
-          if (key.startsWith('AQ.')) {
-            var proceed = confirm('⚠️ Perhatian: Kunci Anda diawali "AQ." yang bukan format resmi Google Gemini (AIzaSy...).\n\nKunci ini kemungkinan besar akan ditolak server Google dengan status 404/400.\n\nApakah Anda tetap ingin menyimpannya?');
-            if (!proceed) return;
-          }
           localStorage.setItem('ruangdana_gemini_api_key', key);
           window.__hasBackendGemini = true;
           if (typeof google !== 'undefined' && google.script && google.script.run) {
@@ -6940,15 +6917,9 @@
         var badge = document.getElementById('geminiKeyBadge');
         var desc = document.getElementById('geminiKeyBadgeDesc');
         var chatBadge = document.getElementById('aiChatEngineBadge');
-        var isInvalidAq = key && key.startsWith('AQ.');
 
         if (chatBadge) {
-          if (isInvalidAq) {
-            chatBadge.style.background = 'rgba(239, 68, 68, 0.15)';
-            chatBadge.style.color = '#F87171';
-            chatBadge.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-            chatBadge.textContent = '⚠️ Format Kunci Keliru (AQ.Ab...)';
-          } else if (key) {
+          if (key) {
             chatBadge.style.background = 'rgba(16, 185, 129, 0.15)';
             chatBadge.style.color = '#10B981';
             chatBadge.style.border = '1px solid rgba(16, 185, 129, 0.3)';
@@ -6963,13 +6934,7 @@
 
         if (!badge) return;
 
-        if (isInvalidAq) {
-          badge.style.background = 'rgba(239, 68, 68, 0.15)';
-          badge.style.color = '#F87171';
-          badge.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-          badge.textContent = '⚠️ Kunci Perlu Diganti (Format AQ)';
-          if (desc) desc.textContent = 'Ganti kunci dengan format AIzaSy... dari Google AI Studio';
-        } else if (key) {
+        if (key) {
           badge.style.background = 'rgba(16, 185, 129, 0.2)';
           badge.style.color = '#10B981';
           badge.style.border = '1px solid rgba(16, 185, 129, 0.4)';
