@@ -1597,6 +1597,8 @@
             <span id="activeUserName" style="font-weight: 600;">Suami</span>
             <span style="font-size: 0.65rem; color: var(--text-muted); margin-left: 2px;">▾</span>
           </div>
+          <button class="action-btn-circle" id="btnRefreshData" title="Refresh Data dari Google Sheets"
+            onclick="app.refreshData()">🔄</button>
           <button class="action-btn-circle" id="btnPrivacy" title="Mode Privasi (Sensor Saldo)"
             onclick="app.togglePrivacy()">👁️</button>
           <button class="action-btn-circle" id="btnTheme" title="Ganti Mode Gelap/Terang"
@@ -1819,7 +1821,6 @@
                 </div>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                   <button type="button" class="btn-sm-action" onclick="app.resetTxnFilters()">Reset</button>
-                  <button type="button" class="btn-sm-action" style="color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.4);" onclick="app.cleanupEmptyTransactions()" title="Hapus transaksi kosong tanpa nominal / cacat">🧹 Bersihkan Baris Kosong</button>
                   <button type="button" class="btn-primary-action"
                     style="background: #10B981; color: white; padding: 7px 16px; font-size: 0.8rem;"
                     onclick="app.exportTxnExcel()" title="Export ke Excel dengan Kolom-Kolom Terpisah">📥 Export Excel
@@ -3466,9 +3467,8 @@
         <div id="loginPinError"
           style="color: var(--accent-rose); font-size: 0.78rem; text-align: center; margin-top: 6px; display: none;">PIN
           salah, silakan coba lagi.</div>
-        <div id="loginPinHint" style="font-size: 0.75rem; color: var(--accent-blue); text-align: center; margin-top: 6px;">
-          💡 PIN Bawaan: <strong>1111</strong> (Suami) &bull; <strong>2222</strong> (Istri) <br>
-          <span style="font-size: 0.68rem; color: var(--text-muted);">(Dapat diubah bebas di Google Sheets tab <em>Pengguna</em>)</span>
+        <div id="loginPinHint" style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 6px;">
+          🔒 Masukkan PIN 4-digit yang tercatat di Google Sheets tab <em>Pengguna</em>
         </div>
       </div>
 
@@ -3509,10 +3509,7 @@
         </small>
       </div>
 
-      <div style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
-        <button type="button" class="btn-sm-action" onclick="app.bypassLogin()" style="font-size: 0.75rem; color: var(--accent-emerald); font-weight: 600; background: transparent; border: none; cursor: pointer;">
-          🔓 Masuk Langsung (Lewati PIN)
-        </button>
+      <div style="margin-top: 12px; display: flex; justify-content: flex-end; align-items: center;">
         <button type="button" class="btn-sm-action" onclick="app.openGasConfigModal()" style="font-size: 0.75rem; color: var(--text-muted); background: transparent; border: none; cursor: pointer;">
           Bantuan Panduan ⚙️
         </button>
@@ -3964,7 +3961,6 @@
           return;
         }
 
-        var isDefaultPin = (prof === 'suami' && pin === '1111') || (prof === 'istri' && pin === '2222');
         var hasGasUrl = !!(localStorage.getItem('ruangdana_gas_api_url') || window.DEFAULT_GAS_API_URL || '').trim();
 
         function doLoginSuccess() {
@@ -3975,7 +3971,7 @@
           self.closeModal('modalFamilyLogin');
           if (errEl) errEl.style.display = 'none';
 
-          // Transisi mulus: jika di GitHub Pages dan URL backend belum diisi, langsung buka modal konfigurasi
+          // Transisi mulus: jika di GitHub Pages dan URL backend belum diisi, buka modal konfigurasi
           if (window.__isGasPolyfilled && !hasGasUrl) {
             self.openGasConfigModal();
           } else {
@@ -3984,9 +3980,9 @@
           }
         }
 
-        // Jika backend belum dikonfigurasi di GitHub Pages, buka langsung agar pengguna bisa mengisi URL
+        // Jika backend belum dikonfigurasi di GitHub Pages, buka modal konfigurasi
         if (!hasGasUrl) {
-          doLoginSuccess();
+          this.openGasConfigModal();
           return;
         }
 
@@ -4001,42 +3997,30 @@
                   doLoginSuccess();
                 } else {
                   if (errEl) {
-                    errEl.textContent = (res && res.message) || 'PIN salah. Silakan coba lagi.';
+                    errEl.textContent = (res && res.message) || 'PIN salah. Pastikan PIN sesuai dengan data di Google Sheets tab Pengguna.';
                     errEl.style.display = 'block';
                   }
                 }
               })
               .withFailureHandler(function (err) {
                 if (btn) btn.disabled = false;
-                if (isDefaultPin) {
-                  doLoginSuccess();
-                  return;
-                }
-                if (!hasGasUrl) {
-                  doLoginSuccess();
-                } else if (errEl) {
-                  errEl.innerHTML = 'Gagal validasi backend: ' + (err.message || err) + '<br><small style="color:var(--text-muted); font-size:0.7rem;">Gunakan PIN bawaan 1111 (Suami) / 2222 (Istri) atau Masuk Langsung di bawah.</small>';
+                if (errEl) {
+                  errEl.textContent = 'Gagal validasi backend: ' + (err.message || err);
                   errEl.style.display = 'block';
                 }
               })
               .apiVerifyUserPin(prof, pin);
           } else {
             if (btn) btn.disabled = false;
-            if (isDefaultPin) {
-              doLoginSuccess();
-            } else {
-              if (errEl) {
-                errEl.textContent = 'PIN salah. Silakan coba lagi.';
-                errEl.style.display = 'block';
-              }
+            if (errEl) {
+              errEl.textContent = 'Layanan backend belum siap.';
+              errEl.style.display = 'block';
             }
           }
         } catch (e) {
           if (btn) btn.disabled = false;
-          if (isDefaultPin) {
-            doLoginSuccess();
-          } else if (errEl) {
-            errEl.textContent = 'Error: ' + (e.message || e);
+          if (errEl) {
+            errEl.textContent = 'Terjadi kesalahan: ' + (e.message || e);
             errEl.style.display = 'block';
           }
         }
@@ -4792,7 +4776,7 @@
         }
       },
 
-      switchView: function (viewName) {
+      switchView: function (viewName, forceRefresh) {
         document.querySelectorAll('.nav-item, .bottom-nav-item, .drawer-nav-item').forEach(function (el) {
           el.classList.toggle('active', el.getAttribute('data-view') === viewName);
         });
@@ -4805,19 +4789,37 @@
           this.currentView = viewName;
         }
 
-        if (viewName === 'dashboard') this.loadDashboard();
-        else if (viewName === 'transactions') this.loadTransactions();
-        else if (viewName === 'wallets') this.loadWallets();
-        else if (viewName === 'budgets') this.loadBudgets();
-        else if (viewName === 'investments') this.loadInvestments();
-        else if (viewName === 'assets') this.loadAssets();
-        else if (viewName === 'debts') this.loadDebts();
-        else if (viewName === 'asset-snapshot') this.loadAssetSnapshot();
+        if (viewName === 'dashboard') this.loadDashboard(forceRefresh);
+        else if (viewName === 'transactions') this.loadTransactions(forceRefresh);
+        else if (viewName === 'wallets') this.loadWallets(forceRefresh);
+        else if (viewName === 'budgets') this.loadBudgets(forceRefresh);
+        else if (viewName === 'investments') this.loadInvestments(forceRefresh);
+        else if (viewName === 'assets') this.loadAssets(forceRefresh);
+        else if (viewName === 'debts') this.loadDebts(forceRefresh);
+        else if (viewName === 'asset-snapshot') this.loadAssetSnapshot(forceRefresh);
+      },
+
+      refreshData: function () {
+        var btn = document.getElementById('btnRefreshData');
+        if (btn) {
+          btn.style.transition = 'transform 0.6s ease';
+          btn.style.transform = 'rotate(360deg)';
+          setTimeout(function () { btn.style.transform = 'none'; }, 600);
+        }
+        this.cache = {};
+        this.showToast('Memperbarui data dari Google Sheets...', 'info');
+        this.switchView(this.currentView, true);
       },
 
       // DASHBOARD & CHARTS
-      loadDashboard: function () {
+      loadDashboard: function (forceRefresh) {
         var self = this;
+        // In-memory instant render (0 detik): render langsung dari cache browser jika ada
+        if (self.cache.dashboard && !forceRefresh) {
+          self.renderDashboard(self.cache.dashboard);
+          return;
+        }
+
         if (typeof google !== 'undefined' && google.script && google.script.run) {
           google.script.run
             .withSuccessHandler(function (data) {
@@ -5151,8 +5153,15 @@
         }
       },
 
-      loadTransactions: function () {
+      loadTransactions: function (forceRefresh) {
         var self = this;
+        // In-memory instant render (0 detik): jika cache transaksi sudah ada di memori
+        if (self.cache.transactions && self.cache.transactions.length > 0 && !forceRefresh) {
+          self.filterTransactions();
+          if (self.txnSubTab === 'calendar') self.renderCashflowCalendar();
+          return;
+        }
+
         var tbody = document.getElementById('txnTableBody');
         tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Memuat transaksi...</td></tr>';
 
@@ -7164,27 +7173,41 @@
       },
 
       // DOMPET (CRUD - TANPA ARSIP, HAPUS PERMANEN)
-      loadWallets: function () {
+      renderWalletsList: function (wallets) {
         var self = this;
         var c = document.getElementById('walletsList');
-        c.innerHTML = '<span style="color:var(--text-muted)">Memuat dompet...</span>';
+        if (!c) return;
+        c.innerHTML = '';
+        (wallets || []).forEach(function (w) {
+          var card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = '<span class="card-title">' + w.type.toUpperCase() + '</span>' +
+            '<h3 style="margin: 8px 0; font-weight:800;">' + w.name + '</h3>' +
+            '<div class="card-val-big currency-val" style="color: var(--accent-blue);">' + self.fmtRp(w.current_balance) + '</div>' +
+            '<div style="display:flex; gap:8px; margin-top:14px;">' +
+            '<button class="btn-sm-action" onclick="app.openEditWallet(' + w.id + ', \'' + w.name + '\', \'' + w.type + '\')">✏️ Edit</button>' +
+            '<button class="btn-sm-action" onclick="app.openAdjustWallet(' + w.id + ', \'' + w.name + '\', ' + w.current_balance + ')">⚖️ Adjust Saldo</button>' +
+            '<button class="btn-sm-action" style="color:var(--accent-rose);" onclick="app.deleteWallet(' + w.id + ', \'' + w.name + '\')">🗑️ Hapus</button>' +
+            '</div>';
+          c.appendChild(card);
+        });
+      },
+
+      loadWallets: function (forceRefresh) {
+        var self = this;
+        // In-memory instant render (0 detik): render seketika jika cache dompet sudah ada
+        if (self.cache.dashboard && self.cache.dashboard.wallets && !forceRefresh) {
+          self.renderWalletsList(self.cache.dashboard.wallets);
+          return;
+        }
+
+        var c = document.getElementById('walletsList');
+        if (c) c.innerHTML = '<span style="color:var(--text-muted)">Memuat dompet...</span>';
 
         if (typeof google !== 'undefined' && google.script && google.script.run) {
           google.script.run.withSuccessHandler(function (res) {
-            c.innerHTML = '';
-            (res.wallets || []).forEach(function (w) {
-              var card = document.createElement('div');
-              card.className = 'card';
-              card.innerHTML = '<span class="card-title">' + w.type.toUpperCase() + '</span>' +
-                '<h3 style="margin: 8px 0; font-weight:800;">' + w.name + '</h3>' +
-                '<div class="card-val-big currency-val" style="color: var(--accent-blue);">' + self.fmtRp(w.current_balance) + '</div>' +
-                '<div style="display:flex; gap:8px; margin-top:14px;">' +
-                '<button class="btn-sm-action" onclick="app.openEditWallet(' + w.id + ', \'' + w.name + '\', \'' + w.type + '\')">✏️ Edit</button>' +
-                '<button class="btn-sm-action" onclick="app.openAdjustWallet(' + w.id + ', \'' + w.name + '\', ' + w.current_balance + ')">⚖️ Adjust Saldo</button>' +
-                '<button class="btn-sm-action" style="color:var(--accent-rose);" onclick="app.deleteWallet(' + w.id + ', \'' + w.name + '\')">🗑️ Hapus</button>' +
-                '</div>';
-              c.appendChild(card);
-            });
+            if (self.cache.dashboard) self.cache.dashboard.wallets = res.wallets;
+            self.renderWalletsList(res.wallets);
           }).apiGetDashboard();
         }
       },
@@ -7287,61 +7310,77 @@
       },
 
       // BUDGET BULANAN (CRUD TERHUBUNG SHEET ANGGARAN)
-      loadBudgets: function () {
+      renderBudgetsList: function (res, p) {
         var self = this;
         var c = document.getElementById('budgetsList');
-        c.innerHTML = '<span style="color:var(--text-muted)">Memuat anggaran...</span>';
+        if (!c) return;
+        c.innerHTML = '';
+        var budgets = res.budgets || [];
+        if (budgets.length === 0) {
+          c.innerHTML = '<span style="color:var(--text-muted)">Belum ada batas budget untuk periode ' + (res.period || p) + '. Klik "+ Atur Budget" untuk menambahkan batas pengeluaran.</span>';
+          return;
+        }
+
+        budgets.forEach(function (b) {
+          var barCol = '#10B981';
+          var statusBadge = '';
+          var pct = b.percentage || 0;
+          if (pct > 100) {
+            barCol = '#F43F5E';
+            statusBadge = '<span style="font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; background: rgba(244,63,94,0.18); color: #F43F5E; font-weight: 700;">🚨 Melebihi Batas</span>';
+          } else if (pct === 100) {
+            barCol = '#F59E0B';
+            statusBadge = '<span style="font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; background: rgba(245,158,11,0.18); color: #F59E0B; font-weight: 700;">⚠️ Batas Tercapai (100%)</span>';
+          } else if (pct >= 80) {
+            barCol = '#F59E0B';
+            statusBadge = '<span style="font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; background: rgba(245,158,11,0.15); color: #F59E0B; font-weight: 600;">⚠️ Mendekati Batas</span>';
+          } else {
+            statusBadge = '<span style="font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; background: rgba(16,185,129,0.15); color: #10B981; font-weight: 600;">✅ Aman</span>';
+          }
+
+          var div = document.createElement('div');
+          div.className = 'card';
+          div.style.padding = '16px 22px';
+          div.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">' +
+            '  <div style="display:flex; align-items:center; gap:8px;">' +
+            '    <strong>' + b.category_name + '</strong>' +
+            '    ' + statusBadge +
+            '  </div>' +
+            '  <span class="currency-val" style="font-weight:700; color:' + barCol + '">' + pct + '%</span>' +
+            '</div>' +
+            '<div style="height:8px; background:var(--bg-primary); border-radius:99px; overflow:hidden;">' +
+            '<div style="width:' + Math.min(100, pct) + '%; height:100%; background:' + barCol + ';"></div>' +
+            '</div>' +
+            '<div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted); margin-top:8px;">' +
+            '<span>Terpakai: <strong class="currency-val" style="color:var(--text-main);">' + self.fmtRp(b.spent) + '</strong></span>' +
+            '<span>Plafon: <strong class="currency-val" style="color:var(--text-main);">' + self.fmtRp(b.limit) + '</strong></span>' +
+            '</div>' +
+            '<div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">' +
+            '<button class="btn-sm-action" onclick="app.openEditBudget(' + b.id + ', ' + b.limit + ')">✏️ Edit Batas</button>' +
+            '<button class="btn-sm-action" style="color:var(--accent-rose);" onclick="app.deleteBudget(' + b.id + ')">🗑️ Hapus</button>' +
+            '</div>';
+          c.appendChild(div);
+        });
+      },
+
+      loadBudgets: function (forceRefresh) {
+        var self = this;
         var p = document.getElementById('bPeriodFilter') ? document.getElementById('bPeriodFilter').value : new Date().toISOString().slice(0, 7);
+
+        // In-memory instant render (0 detik): render seketika jika cache anggaran bulan ini sudah ada
+        if (self.cache.budgets && self.cache.budgets[p] && !forceRefresh) {
+          self.renderBudgetsList(self.cache.budgets[p], p);
+          return;
+        }
+
+        var c = document.getElementById('budgetsList');
+        if (c) c.innerHTML = '<span style="color:var(--text-muted)">Memuat anggaran...</span>';
 
         if (typeof google !== 'undefined' && google.script && google.script.run) {
           google.script.run.withSuccessHandler(function (res) {
-            c.innerHTML = '';
-            var budgets = res.budgets || [];
-            if (budgets.length === 0) {
-              c.innerHTML = '<span style="color:var(--text-muted)">Belum ada batas budget untuk periode ' + (res.period || p) + '. Klik "+ Atur Budget" untuk menambahkan batas pengeluaran.</span>';
-              return;
-            }
-
-            budgets.forEach(function (b) {
-              var barCol = '#10B981';
-              var statusBadge = '';
-              var pct = b.percentage || 0;
-              if (pct > 100) {
-                barCol = '#F43F5E';
-                statusBadge = '<span style="font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; background: rgba(244,63,94,0.18); color: #F43F5E; font-weight: 700;">🚨 Melebihi Batas</span>';
-              } else if (pct === 100) {
-                barCol = '#F59E0B';
-                statusBadge = '<span style="font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; background: rgba(245,158,11,0.18); color: #F59E0B; font-weight: 700;">⚠️ Batas Tercapai (100%)</span>';
-              } else if (pct >= 80) {
-                barCol = '#F59E0B';
-                statusBadge = '<span style="font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; background: rgba(245,158,11,0.15); color: #F59E0B; font-weight: 600;">⚠️ Mendekati Batas</span>';
-              } else {
-                statusBadge = '<span style="font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; background: rgba(16,185,129,0.15); color: #10B981; font-weight: 600;">✅ Aman</span>';
-              }
-
-              var div = document.createElement('div');
-              div.className = 'card';
-              div.style.padding = '16px 22px';
-              div.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">' +
-                '  <div style="display:flex; align-items:center; gap:8px;">' +
-                '    <strong>' + b.category_name + '</strong>' +
-                '    ' + statusBadge +
-                '  </div>' +
-                '  <span class="currency-val" style="font-weight:700; color:' + barCol + '">' + pct + '%</span>' +
-                '</div>' +
-                '<div style="height:8px; background:var(--bg-primary); border-radius:99px; overflow:hidden;">' +
-                '<div style="width:' + Math.min(100, pct) + '%; height:100%; background:' + barCol + ';"></div>' +
-                '</div>' +
-                '<div style="display:flex; justify-content:space-between; font-size:0.8rem; color:var(--text-muted); margin-top:8px;">' +
-                '<span>Terpakai: <strong class="currency-val" style="color:var(--text-main);">' + self.fmtRp(b.spent) + '</strong></span>' +
-                '<span>Plafon: <strong class="currency-val" style="color:var(--text-main);">' + self.fmtRp(b.limit) + '</strong></span>' +
-                '</div>' +
-                '<div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">' +
-                '<button class="btn-sm-action" onclick="app.openEditBudget(' + b.id + ', ' + b.limit + ')">✏️ Edit Batas</button>' +
-                '<button class="btn-sm-action" style="color:var(--accent-rose);" onclick="app.deleteBudget(' + b.id + ')">🗑️ Hapus</button>' +
-                '</div>';
-              c.appendChild(div);
-            });
+            self.cache.budgets = self.cache.budgets || {};
+            self.cache.budgets[p] = res;
+            self.renderBudgetsList(res, p);
           }).apiGetBudgets(p);
         }
       },
