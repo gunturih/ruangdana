@@ -2113,7 +2113,7 @@
             <h2 style="font-weight: 800; font-size: 1.4rem; margin: 0;">Asisten AI Keuangan Keluarga</h2>
             <div id="aiChatStatusBadgeWrap" style="display: flex; align-items: center; gap: 8px;">
               <span id="aiChatEngineBadge" style="font-size: 0.78rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: rgba(16,185,129,0.15); color: #10B981; border: 1px solid rgba(16,185,129,0.3);">🟢 Gemini AI Aktif</span>
-              <button type="button" class="btn-sm-action" onclick="app.openGeminiKeyModal()" style="font-size: 0.75rem; padding: 4px 10px;">⚙️ Kunci Gemini AI</button>
+              <button type="button" class="btn-sm-action" onclick="app.openAiConfigModal()" style="font-size: 0.75rem; padding: 4px 10px;">⚙️ Pengaturan AI Multi-Engine</button>
             </div>
           </div>
           <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
@@ -3282,28 +3282,44 @@
   </div>
 
   <!-- ========================================================================
-       MODAL 11: PENGATURAN KUNCI GEMINI AI VISION & ADVISOR
+       MODAL 11: PENGATURAN MESIN AI MULTI-ENGINE & CLOUD SYNC
        ======================================================================== -->
   <div class="modal-overlay" id="modalGeminiKey">
-    <div class="modal-content" style="max-width: 520px;">
-      <h3 style="margin-bottom: 12px; font-weight: 800;">🔑 Kunci API Google Gemini (AI Advisor & Vision)</h3>
+    <div class="modal-content" style="max-width: 540px;">
+      <h3 style="margin-bottom: 8px; font-weight: 800; font-size: 1.25rem;">⚙️ Pengaturan Mesin Asisten AI Finansial</h3>
       <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.5; margin-bottom: 14px;">
-        Dengan memasang API Key resmi dari Google AI Studio, fitur <strong>Percakapan Bebas Asisten AI</strong> dan <strong>Scan Nota Cerdas (Vision)</strong> akan aktif 100% menggunakan model Google Gemini.
+        Pilih mesin kecerdasan buatan untuk asisten keuangan keluarga. Kunci dan pengaturan <strong>otomatis tersinkronisasi ke Google Cloud</strong> sehingga saat Anda berganti perangkat (HP Suami & HP Istri), pengaturan langsung aktif tanpa perlu memasukkan ulang.
       </p>
-      <div class="form-group" style="margin-bottom: 12px;">
-        <label class="form-label">Kunci API Gemini (Google AI Studio)</label>
-        <input type="password" class="form-input" id="inpGeminiKey" placeholder="Tempel kunci resmi berawalan AIzaSy... di sini" oninput="app.onGeminiKeyInput(this.value)">
-        <small style="color: var(--accent-blue); font-size: 0.75rem; display: block; margin-top: 6px;">
-          💡 <strong>Belum punya kunci resmi?</strong> Buat gratis dalam 1 menit di <a href="https://aistudio.google.com/app/apikey" target="_blank"
-            style="color: var(--accent-blue); text-decoration: underline; font-weight: 700;">Google AI Studio</a>. Format kunci resmi selalu berawalan <code>AIzaSy...</code> (39 karakter).
-        </small>
-        <div id="geminiKeyStatusBox" style="margin-top: 10px; display: none; padding: 10px 12px; border-radius: 8px; font-size: 0.8rem; line-height: 1.4;"></div>
+
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label class="form-label" style="font-weight: 700;">1. Pilih Mesin Utama (AI Provider)</label>
+        <select class="form-input" id="selAiProvider" onchange="app.onAiProviderChange(this.value)" style="font-weight: 600;">
+          <option value="local">⚡ Kalkulator Spreadsheet Riil (Instan 0 Detik - Offline)</option>
+          <option value="groq">⚡ Groq Cloud: Llama 3.3 70B (Gratis & Super Cepat ~0.3s) — Rekomendasi</option>
+          <option value="gemini">🟢 Google Gemini: Gemini 1.5 Flash (Google AI Studio - Gratis)</option>
+          <option value="openai">🤖 OpenAI ChatGPT: GPT-4o-mini (OpenAI Platform)</option>
+          <option value="deepseek">🔵 DeepSeek: DeepSeek-V3 (DeepSeek Platform)</option>
+          <option value="openrouter">🌐 OpenRouter: Multi-Model Gateway (All-in-One)</option>
+        </select>
       </div>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px;">
+
+      <!-- Kotak Bantuan Cara Mendapatkan API Key & Tutorial Link -->
+      <div id="aiProviderHelpBox" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 12px 14px; font-size: 0.82rem; line-height: 1.5; margin-bottom: 14px; color: var(--text-sub);">
+      </div>
+
+      <!-- Input API Key (Disembunyikan jika pilih Mode Spreadsheet Riil) -->
+      <div class="form-group" id="wrapAiApiKey" style="margin-bottom: 12px;">
+        <label class="form-label" id="lblAiApiKey" style="font-weight: 700;">Kunci API (API Key)</label>
+        <input type="password" class="form-input" id="inpGeminiKey" placeholder="Tempel kunci API Anda di sini" oninput="app.onGeminiKeyInput(this.value)">
+      </div>
+
+      <div id="geminiKeyStatusBox" style="margin-top: 10px; display: none; padding: 10px 12px; border-radius: 8px; font-size: 0.8rem; line-height: 1.4;"></div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; flex-wrap: wrap; gap: 8px;">
         <button type="button" class="btn-sm-action" onclick="app.testGeminiKey()" id="btnTestGemini">⚡ Uji Sambungan</button>
         <div style="display: flex; gap: 10px;">
           <button type="button" class="btn-sm-action" onclick="app.closeModal('modalGeminiKey')">Tutup</button>
-          <button type="button" class="btn-accent-blue" onclick="app.saveGeminiKey()">Simpan Kunci</button>
+          <button type="button" class="btn-accent-blue" onclick="app.saveAiConfig()">💾 Simpan ke Cloud</button>
         </div>
       </div>
     </div>
@@ -5027,21 +5043,17 @@
           google.script.run
             .withSuccessHandler(function (data) {
               self.cache.dashboard = data;
+              if (data && data.ai_config) {
+                if (data.ai_config.provider) localStorage.setItem('ruangdana_ai_provider', data.ai_config.provider);
+                if (data.ai_config.api_key) localStorage.setItem('ruangdana_ai_api_key', data.ai_config.api_key);
+              }
               if (data && data.gemini_api_key) {
                 localStorage.setItem('ruangdana_gemini_api_key', data.gemini_api_key);
                 window.__hasBackendGemini = true;
-                self.updateAiEngineStatus();
               } else if (data && data.has_gemini) {
                 window.__hasBackendGemini = true;
-                self.updateAiEngineStatus();
-              } else {
-                // Jika peramban lokal (misal PC) menyimpan kunci, sinkronkan otomatis ke Cloud
-                var localKey = (localStorage.getItem('ruangdana_gemini_api_key') || window.DEFAULT_GEMINI_API_KEY || '').trim();
-                if (localKey && localKey !== 'BACKEND_GEMINI_ACTIVE') {
-                  google.script.run.apiSaveGeminiApiKey(localKey);
-                  window.__hasBackendGemini = true;
-                }
               }
+              self.updateAiEngineStatus();
               self.renderDashboard(data);
             })
             .withFailureHandler(function (err) {
@@ -6781,16 +6793,84 @@
       },
 
       // ========================================================================
-      // GOOGLE GEMINI FLASH VISION RECEIPT SCANNING & AI ADVISOR
+      // MULTI-AI ENGINE CONTROLLER & CLOUD SYNC (GROQ, GEMINI, OPENAI, DEEPSEEK)
       // ========================================================================
-      openGeminiKeyModal: function () {
-        var existingKey = localStorage.getItem('ruangdana_gemini_api_key') || '';
+      openAiConfigModal: function () {
+        var provider = localStorage.getItem('ruangdana_ai_provider') || 'local';
+        var key = localStorage.getItem('ruangdana_ai_api_key') || localStorage.getItem('ruangdana_gemini_api_key') || '';
+        
+        var sel = document.getElementById('selAiProvider');
+        if (sel) sel.value = provider;
+        
         var input = document.getElementById('inpGeminiKey');
-        if (input) {
-          input.value = existingKey;
-          this.onGeminiKeyInput(existingKey);
-        }
+        if (input) input.value = key;
+        
+        this.onAiProviderChange(provider);
         this.openModal('modalGeminiKey');
+      },
+
+      openGeminiKeyModal: function () {
+        this.openAiConfigModal();
+      },
+
+      onAiProviderChange: function (provider) {
+        var box = document.getElementById('aiProviderHelpBox');
+        var wrapKey = document.getElementById('wrapAiApiKey');
+        var input = document.getElementById('inpGeminiKey');
+        var lbl = document.getElementById('lblAiApiKey');
+        var statusBox = document.getElementById('geminiKeyStatusBox');
+        if (statusBox) statusBox.style.display = 'none';
+
+        if (provider === 'local') {
+          if (wrapKey) wrapKey.style.display = 'none';
+          if (box) {
+            box.style.display = 'block';
+            box.style.background = 'rgba(56, 189, 248, 0.12)';
+            box.style.border = '1px solid rgba(56, 189, 248, 0.3)';
+            box.innerHTML = '⚡ <strong>Mode Spreadsheet Riil (Offline & Instan 0 Detik):</strong><br>' +
+              'Seluruh pertanyaan dijawab 100% instan langsung dari database Google Sheets Anda tanpa internet/kunci API luar. Aman, privat, super cepat, dan nol risiko error.';
+          }
+        } else {
+          if (wrapKey) wrapKey.style.display = 'block';
+          if (box) box.style.display = 'block';
+
+          if (provider === 'groq') {
+            box.style.background = 'rgba(16, 185, 129, 0.12)';
+            box.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+            box.innerHTML = '⚡ <strong>Groq Cloud (Llama 3.3 70B):</strong> Tercepat di dunia (~0.3 detik) & <strong>100% GRATIS tanpa kartu kredit!</strong><br>' +
+              '👉 Buat kunci gratis dalam 30 detik di: <a href="https://console.groq.com/keys" target="_blank" style="color:var(--accent-emerald); font-weight:700; text-decoration:underline;">console.groq.com/keys</a> (Format kunci diawali <code>gsk_...</code>).';
+            if (lbl) lbl.textContent = 'Kunci API Groq (gsk_...)';
+            if (input) input.placeholder = 'Tempel kunci resmi Groq berawalan gsk_... di sini';
+          } else if (provider === 'gemini') {
+            box.style.background = 'rgba(56, 189, 248, 0.12)';
+            box.style.border = '1px solid rgba(56, 189, 248, 0.3)';
+            box.innerHTML = '🟢 <strong>Google Gemini (Gemini 1.5 Flash):</strong> Model resmi Google AI Studio (Gratis).<br>' +
+              '👉 Buat kunci gratis di: <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent-blue); font-weight:700; text-decoration:underline;">aistudio.google.com/app/apikey</a> (Format kunci diawali <code>AIzaSy...</code>).';
+            if (lbl) lbl.textContent = 'Kunci API Google Gemini (AIzaSy...)';
+            if (input) input.placeholder = 'Tempel kunci resmi Google AI Studio berawalan AIzaSy... di sini';
+          } else if (provider === 'openai') {
+            box.style.background = 'rgba(168, 85, 247, 0.12)';
+            box.style.border = '1px solid rgba(168, 85, 247, 0.3)';
+            box.innerHTML = '🤖 <strong>OpenAI ChatGPT (GPT-4o-mini):</strong> Kecerdasan percakapan standar industri.<br>' +
+              '👉 Dapatkan kunci di: <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--accent-purple); font-weight:700; text-decoration:underline;">platform.openai.com/api-keys</a> (Format kunci diawali <code>sk-...</code>).';
+            if (lbl) lbl.textContent = 'Kunci API OpenAI (sk-...)';
+            if (input) input.placeholder = 'Tempel kunci OpenAI berawalan sk-... di sini';
+          } else if (provider === 'deepseek') {
+            box.style.background = 'rgba(2, 132, 199, 0.12)';
+            box.style.border = '1px solid rgba(2, 132, 199, 0.3)';
+            box.innerHTML = '🔵 <strong>DeepSeek (DeepSeek-V3):</strong> Penalaran logika & matematika mendalam.<br>' +
+              '👉 Dapatkan kunci di: <a href="https://platform.deepseek.com/api_keys" target="_blank" style="color:var(--accent-blue); font-weight:700; text-decoration:underline;">platform.deepseek.com/api_keys</a> (Format kunci diawali <code>sk-...</code>).';
+            if (lbl) lbl.textContent = 'Kunci API DeepSeek (sk-...)';
+            if (input) input.placeholder = 'Tempel kunci DeepSeek berawalan sk-... di sini';
+          } else if (provider === 'openrouter') {
+            box.style.background = 'rgba(245, 158, 11, 0.12)';
+            box.style.border = '1px solid rgba(245, 158, 11, 0.3)';
+            box.innerHTML = '🌐 <strong>OpenRouter:</strong> Satu kunci untuk semua model AI (Llama, Claude, GPT, DeepSeek).<br>' +
+              '👉 Dapatkan kunci di: <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--accent-amber); font-weight:700; text-decoration:underline;">openrouter.ai/keys</a> (Format kunci diawali <code>sk-or-...</code>).';
+            if (lbl) lbl.textContent = 'Kunci API OpenRouter (sk-or-...)';
+            if (input) input.placeholder = 'Tempel kunci OpenRouter berawalan sk-or-... di sini';
+          }
+        }
       },
 
       onGeminiKeyInput: function (val) {
@@ -6805,23 +6885,25 @@
         box.style.background = 'rgba(56, 189, 248, 0.12)';
         box.style.color = '#38BDF8';
         box.style.border = '1px solid rgba(56, 189, 248, 0.3)';
-        box.innerHTML = '🔑 <strong>Kunci Terdeteksi:</strong> Panjang ' + cleanVal.length + ' karakter. Klik tombol <strong>⚡ Uji Sambungan</strong> di bawah untuk menguji ke server Google secara riil.';
+        box.innerHTML = '🔑 <strong>Kunci Terdeteksi:</strong> Panjang ' + cleanVal.length + ' karakter. Klik tombol <strong>⚡ Uji Sambungan</strong> di bawah untuk memverifikasi sambungan.';
       },
 
-      testGeminiKey: function () {
+      testAiConnection: function () {
+        var sel = document.getElementById('selAiProvider');
+        var provider = sel ? sel.value : 'local';
         var input = document.getElementById('inpGeminiKey');
         var key = input ? input.value.trim() : '';
         var box = document.getElementById('geminiKeyStatusBox');
         var btn = document.getElementById('btnTestGemini');
         var self = this;
 
-        if (!key) {
+        if (provider !== 'local' && !key) {
           if (box) {
             box.style.display = 'block';
             box.style.background = 'rgba(245, 158, 11, 0.15)';
             box.style.color = '#F59E0B';
             box.style.border = '1px solid rgba(245, 158, 11, 0.3)';
-            box.innerHTML = '⚠️ Masukkan kunci API terlebih dahulu.';
+            box.innerHTML = '⚠️ Masukkan kunci API untuk ' + provider.toUpperCase() + ' terlebih dahulu.';
           }
           return;
         }
@@ -6831,7 +6913,7 @@
           box.style.background = 'rgba(56, 189, 248, 0.15)';
           box.style.color = '#38BDF8';
           box.style.border = '1px solid rgba(56, 189, 248, 0.3)';
-          box.innerHTML = '⏳ <em>Menghubungi server Google Cloud Gemini API... mohon tunggu sebentar...</em>';
+          box.innerHTML = '⏳ <em>Menguji sambungan ke server ' + provider.toUpperCase() + '... mohon tunggu sebentar...</em>';
         }
         if (btn) {
           btn.disabled = true;
@@ -6847,12 +6929,12 @@
                 box.style.background = 'rgba(16, 185, 129, 0.15)';
                 box.style.color = '#10B981';
                 box.style.border = '1px solid rgba(16, 185, 129, 0.3)';
-                box.innerHTML = '🎉 ' + (res.message || 'Koneksi Berhasil! Gemini AI aktif.');
+                box.innerHTML = '🎉 ' + (res.message || 'Koneksi Berhasil!');
               } else {
                 box.style.background = 'rgba(239, 68, 68, 0.15)';
                 box.style.color = '#F87171';
                 box.style.border = '1px solid rgba(239, 68, 68, 0.3)';
-                box.innerHTML = '❌ ' + (res && res.message ? res.message : 'Koneksi gagal ditolak oleh Google.');
+                box.innerHTML = '❌ ' + (res && res.message ? res.message : 'Koneksi gagal ditolak oleh server.');
               }
             })
             .withFailureHandler(function (err) {
@@ -6864,88 +6946,120 @@
                 box.innerHTML = '❌ Gagal memanggil fungsi Apps Script: ' + (err.message || err);
               }
             })
-            .apiTestGeminiKey(key);
+            .apiTestAiConnection(provider, key);
         } else {
-          // Demo / Client Mode tanpa backend
           setTimeout(function () {
             if (btn) { btn.disabled = false; btn.textContent = '⚡ Uji Sambungan'; }
             if (!box) return;
-            box.style.background = 'rgba(56, 189, 248, 0.15)';
-            box.style.color = '#38BDF8';
-            box.style.border = '1px solid rgba(56, 189, 248, 0.3)';
-            box.innerHTML = 'ℹ️ Di lingkungan Google Apps Script, tombol ini akan langsung memverifikasi kunci ke endpoint Google Generative Language API.';
+            box.style.background = 'rgba(16, 185, 129, 0.15)';
+            box.style.color = '#10B981';
+            box.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+            box.innerHTML = '✅ Mode Simulasi: Provider ' + provider.toUpperCase() + ' siap digunakan.';
           }, 600);
         }
       },
 
-      saveGeminiKey: function () {
+      testGeminiKey: function () {
+        this.testAiConnection();
+      },
+
+      saveAiConfig: function () {
+        var sel = document.getElementById('selAiProvider');
+        var provider = sel ? sel.value : 'local';
         var input = document.getElementById('inpGeminiKey');
         var key = input ? input.value.trim() : '';
         var self = this;
-        if (key) {
+
+        localStorage.setItem('ruangdana_ai_provider', provider);
+        localStorage.setItem('ruangdana_ai_api_key', key);
+        if (provider === 'gemini') {
           localStorage.setItem('ruangdana_gemini_api_key', key);
-          window.__hasBackendGemini = true;
-          if (typeof google !== 'undefined' && google.script && google.script.run) {
-            google.script.run
-              .withSuccessHandler(function (res) {
-                if (self.showToast) self.showToast('✅ Kunci Gemini API berhasil disinkronkan ke Cloud!', 'success');
-              })
-              .apiSaveGeminiApiKey(key);
-          }
-          alert('✅ Kunci API Gemini berhasil disimpan!\nSistem otomatis menyinkronkan kunci ini ke Google Cloud sehingga HP Suami & HP Istri langsung aktif.');
-        } else {
-          localStorage.removeItem('ruangdana_gemini_api_key');
-          window.__hasBackendGemini = false;
-          if (typeof google !== 'undefined' && google.script && google.script.run) {
-            google.script.run.apiSaveGeminiApiKey('');
-          }
-          alert('ℹ️ Kunci API Gemini dihapus.');
         }
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              if (self.showToast) self.showToast('✅ Konfigurasi AI berhasil disinkronkan ke Google Cloud!', 'success');
+            })
+            .apiSaveAiConfig(provider, key);
+
+          if (provider === 'gemini') {
+            try { google.script.run.apiSaveGeminiApiKey(key); } catch (e) {}
+          }
+        }
+
+        alert('✅ Pengaturan Mesin AI (' + provider.toUpperCase() + ') Berhasil Disimpan!\n\nSistem otomatis menyinkronkan pengaturan ini ke Google Cloud sehingga saat Anda membuka dari HP Suami maupun HP Istri, mesin AI langsung aktif tanpa perlu memasukkan kunci ulang.');
         this.updateAiEngineStatus();
         this.closeModal('modalGeminiKey');
       },
 
+      // app.saveGeminiKey legacy alias
+      saveGeminiKey: function () {
+        this.saveAiConfig();
+      },
+
       getGeminiApiKey: function () {
-        var key = (localStorage.getItem('ruangdana_gemini_api_key') || window.DEFAULT_GEMINI_API_KEY || '').trim();
+        var key = (localStorage.getItem('ruangdana_ai_api_key') || localStorage.getItem('ruangdana_gemini_api_key') || window.DEFAULT_GEMINI_API_KEY || '').trim();
         if (key) return key;
         if (window.__hasBackendGemini) return 'BACKEND_GEMINI_ACTIVE';
         return '';
       },
 
       updateAiEngineStatus: function () {
+        var provider = localStorage.getItem('ruangdana_ai_provider') || 'local';
         var key = this.getGeminiApiKey();
         var badge = document.getElementById('geminiKeyBadge');
         var desc = document.getElementById('geminiKeyBadgeDesc');
         var chatBadge = document.getElementById('aiChatEngineBadge');
 
         if (chatBadge) {
-          if (key) {
+          if (provider === 'local') {
+            chatBadge.style.background = 'rgba(56, 189, 248, 0.15)';
+            chatBadge.style.color = '#38BDF8';
+            chatBadge.style.border = '1px solid rgba(56, 189, 248, 0.3)';
+            chatBadge.textContent = '⚡ Mode Spreadsheet (Instan 0s)';
+          } else if (provider === 'groq') {
+            chatBadge.style.background = 'rgba(16, 185, 129, 0.15)';
+            chatBadge.style.color = '#10B981';
+            chatBadge.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+            chatBadge.textContent = '⚡ Groq Llama 3.3 (Aktif)';
+          } else if (provider === 'gemini') {
             chatBadge.style.background = 'rgba(16, 185, 129, 0.15)';
             chatBadge.style.color = '#10B981';
             chatBadge.style.border = '1px solid rgba(16, 185, 129, 0.3)';
             chatBadge.textContent = (key === 'BACKEND_GEMINI_ACTIVE') ? '🟢 Gemini AI Aktif (Google Cloud)' : '🟢 Gemini AI Aktif';
-          } else {
+          } else if (provider === 'openai') {
+            chatBadge.style.background = 'rgba(168, 85, 247, 0.15)';
+            chatBadge.style.color = '#A855F7';
+            chatBadge.style.border = '1px solid rgba(168, 85, 247, 0.3)';
+            chatBadge.textContent = '🤖 ChatGPT (Aktif)';
+          } else if (provider === 'deepseek') {
+            chatBadge.style.background = 'rgba(2, 132, 199, 0.15)';
+            chatBadge.style.color = '#38BDF8';
+            chatBadge.style.border = '1px solid rgba(2, 132, 199, 0.3)';
+            chatBadge.textContent = '🔵 DeepSeek-V3 (Aktif)';
+          } else if (provider === 'openrouter') {
             chatBadge.style.background = 'rgba(245, 158, 11, 0.15)';
             chatBadge.style.color = '#F59E0B';
             chatBadge.style.border = '1px solid rgba(245, 158, 11, 0.3)';
-            chatBadge.textContent = '🟡 Mode Kalkulator Offline';
+            chatBadge.textContent = '🌐 OpenRouter (Aktif)';
           }
         }
 
         if (!badge) return;
 
-        if (key) {
+        if (key || provider === 'local') {
           badge.style.background = 'rgba(16, 185, 129, 0.2)';
           badge.style.color = '#10B981';
           badge.style.border = '1px solid rgba(16, 185, 129, 0.4)';
-          badge.textContent = (key === 'BACKEND_GEMINI_ACTIVE') ? '🟢 Gemini Vision Aktif (Google Cloud)' : '🟢 Gemini Vision Aktif';
-          if (desc) desc.textContent = 'Google Gemini Vision (High Reasoning OCR Struk Kasir)';
+          badge.textContent = provider === 'local' ? '⚡ Mode Spreadsheet Instan' : '🟢 Mesin AI (' + provider.toUpperCase() + ') Siap';
+          if (desc) desc.textContent = 'Multi-Engine Financial Advisor (Tersinkronisasi Cloud)';
         } else {
           badge.style.background = 'rgba(148, 163, 184, 0.15)';
           badge.style.color = '#94A3B8';
           badge.style.border = '1px solid rgba(148, 163, 184, 0.3)';
-          badge.textContent = '⚪ Gemini Standby';
-          if (desc) desc.textContent = 'Pasang Kunci API Gemini gratis untuk ekstraksi struk kasir instan';
+          badge.textContent = '⚪ AI Standby';
+          if (desc) desc.textContent = 'Klik tombol di kanan untuk memilih mesin AI atau pakai mode spreadsheet';
         }
       },
 
@@ -8642,6 +8756,7 @@
         thread.innerHTML += '<div id="' + typingId + '" style="background:var(--bg-primary); padding:12px 14px; border-radius:12px; border:1px solid var(--border-color); font-size:0.85rem; color:var(--text-muted);"><span class="spinner"></span> 🤖 Sedang menganalisis kondisi keuangan keluarga Anda...</div>';
         thread.scrollTop = thread.scrollHeight;
 
+        var provider = localStorage.getItem('ruangdana_ai_provider') || 'local';
         var geminiKey = this.getGeminiApiKey();
         var actualKey = (geminiKey === 'BACKEND_GEMINI_ACTIVE') ? '' : geminiKey;
 
@@ -8669,7 +8784,7 @@
               thread.innerHTML += '<div style="background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.3); color:#F43F5E; padding:12px; border-radius:12px; font-size:0.85rem;">Gagal mendapatkan jawaban dari Asisten AI: ' + (err.message || err) + '</div>';
               thread.scrollTop = thread.scrollHeight;
             })
-            .apiAskFinancialAI(q, actualKey);
+            .apiAskFinancialAI(q, actualKey, provider);
         } else {
           setTimeout(function () {
             var elTyping = document.getElementById(typingId);
