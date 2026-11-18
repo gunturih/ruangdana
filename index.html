@@ -2103,8 +2103,15 @@
 
         <!-- 8. ASISTEN AI -->
         <section class="view-section" id="view-ai-assistant">
-          <h2 style="font-weight: 800; font-size: 1.4rem; margin-bottom: 12px;">Asisten AI Keuangan Keluarga</h2>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <h2 style="font-weight: 800; font-size: 1.4rem; margin: 0;">Asisten AI Keuangan Keluarga</h2>
+            <div id="aiChatStatusBadgeWrap" style="display: flex; align-items: center; gap: 8px;">
+              <span id="aiChatEngineBadge" style="font-size: 0.78rem; font-weight: 600; padding: 4px 10px; border-radius: 20px; background: rgba(16,185,129,0.15); color: #10B981; border: 1px solid rgba(16,185,129,0.3);">🟢 Gemini AI Aktif</span>
+              <button type="button" class="btn-sm-action" onclick="app.openGeminiKeyModal()" style="font-size: 0.75rem; padding: 4px 10px;">⚙️ Kunci Gemini AI</button>
+            </div>
+          </div>
           <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+            <button class="switch-pill" onclick="app.askAI('Bagaimana perhitungan dana darurat keluarga kita?')">🛡️ Perhitungan dana darurat?</button>
             <button class="switch-pill" onclick="app.askAI('Berapa total pengeluaran bulan ini?')">💸 Total pengeluaran
               bulan ini?</button>
             <button class="switch-pill" onclick="app.askAI('Pengeluaran terbesar bulan ini apa?')">💡 Pengeluaran
@@ -3101,7 +3108,7 @@
       </p>
       <div class="form-group" style="margin-bottom: 12px;">
         <label class="form-label">Kunci API Gemini (Google AI Studio)</label>
-        <input type="password" class="form-input" id="inpGeminiKey" placeholder="Tempel kunci AIzaSy... di sini">
+        <input type="password" class="form-input" id="inpGeminiKey" placeholder="Tempel kunci AIzaSy... atau AQ.Ab... di sini">
         <small style="color: var(--accent-blue); font-size: 0.75rem; display: block; margin-top: 6px;">
           💡 Belum punya? <a href="https://aistudio.google.com/app/apikey" target="_blank"
             style="color: var(--accent-blue); text-decoration: underline;">Klik di sini untuk membuat kunci gratis di
@@ -3579,7 +3586,7 @@
     // Menghubungkan seluruh perangkat keluarga (HP Suami & HP Istri) secara otomatis
     // ==========================================================================
     window.DEFAULT_GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxAuH20MXpjA8DLIvcFcMDcoYdoxeh0QnprCiqNjYG6QxmgdVmo_iLUzRihsBKKk3MO/exec';
-    window.DEFAULT_GEMINI_API_KEY = '';
+    window.DEFAULT_GEMINI_API_KEY = 'AQ.Ab8RN6LFx421i9QyL7CTWOO001DsoYS';
 
     // ==========================================================================
     // HYBRID ADAPTER: DUAL MODE (GOOGLE APPS SCRIPT IFRAME OR GITHUB PAGES)
@@ -4797,6 +4804,7 @@
         else if (viewName === 'assets') this.loadAssets(forceRefresh);
         else if (viewName === 'debts') this.loadDebts(forceRefresh);
         else if (viewName === 'asset-snapshot') this.loadAssetSnapshot(forceRefresh);
+        else if (viewName === 'ai-assistant') this.updateAiEngineStatus();
       },
 
       refreshData: function () {
@@ -6625,6 +6633,22 @@
         var key = this.getGeminiApiKey();
         var badge = document.getElementById('geminiKeyBadge');
         var desc = document.getElementById('geminiKeyBadgeDesc');
+        var chatBadge = document.getElementById('aiChatEngineBadge');
+
+        if (chatBadge) {
+          if (key) {
+            chatBadge.style.background = 'rgba(16, 185, 129, 0.15)';
+            chatBadge.style.color = '#10B981';
+            chatBadge.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+            chatBadge.textContent = (key === 'BACKEND_GEMINI_ACTIVE') ? '🟢 Gemini AI Aktif (Google Cloud)' : '🟢 Gemini AI Aktif';
+          } else {
+            chatBadge.style.background = 'rgba(245, 158, 11, 0.15)';
+            chatBadge.style.color = '#F59E0B';
+            chatBadge.style.border = '1px solid rgba(245, 158, 11, 0.3)';
+            chatBadge.textContent = '🟡 Mode Kalkulator Offline';
+          }
+        }
+
         if (!badge) return;
 
         if (key) {
