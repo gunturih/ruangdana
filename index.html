@@ -1575,6 +1575,12 @@
           </svg>
           <span>Total Aset & Kekayaan</span>
         </a>
+        <a class="nav-item" data-view="zakat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+          </svg>
+          <span>Zakat & Filantropi</span>
+        </a>
       </nav>
     </aside>
 
@@ -2486,6 +2492,168 @@
             </div>
           </div>
         </section>
+
+        <!-- 10. KALKULATOR & PEMBUKUAN ZAKAT KELUARGA (FIQH BAZNAS) -->
+        <section class="view-section" id="view-zakat">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.6rem;">🌙</span>
+                <h2 style="font-weight: 800; font-size: 1.4rem; margin: 0;">Zakat & Filantropi Keluarga</h2>
+              </div>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Kalkulator Syariah & Pelacak Realisasi Zakat Mal, Zakat Fitrah & Sedekah (Fiqh BAZNAS)</p>
+            </div>
+            <div id="zakatHijriBadge" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--accent-emerald); padding: 8px 14px; border-radius: 12px; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+              <span>📅</span> <span id="lblZakatHijriDate">Memuat Kalender Hijriyah...</span>
+            </div>
+          </div>
+
+          <!-- BANNER COUNTDOWN RAMADAN / MOMENTUM HAUL -->
+          <div class="card" id="zakatRamadanBanner" style="margin-bottom: 20px; padding: 16px 20px; background: linear-gradient(135deg, rgba(2, 132, 199, 0.12), rgba(16, 185, 129, 0.08)); border: 1px solid rgba(56, 189, 248, 0.3); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <div style="font-size: 2.2rem;">⏳</div>
+              <div>
+                <div style="font-weight: 700; font-size: 1rem; color: var(--text-main);" id="zakatCountdownTitle">Menuju Bulan Suci Ramadan 1448 H</div>
+                <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;" id="zakatCountdownDesc">Momentum paling utama dan penuh berkah untuk menunaikan Zakat Mal & Zakat Fitrah tahunan.</div>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <span id="zakatCountdownDays" style="font-size: 1.5rem; font-weight: 900; color: var(--accent-blue);">~105 Hari</span>
+              <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Estimasi Tanggal Haul</div>
+            </div>
+          </div>
+
+          <!-- PANEL PENGATURAN HAUL & HARGA EMAS NISAB -->
+          <div class="card" style="margin-bottom: 24px; padding: 18px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+              <div style="flex: 1; min-width: 260px;">
+                <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 8px;">1. Patokan Tanggal Haul (1 Tahun Kepemilikan)</label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <button type="button" class="switch-pill active" id="btnHaulRamadan" onclick="app.setHaulMode('ramadan')">🌙 Bulan Ramadan (Otomatis)</button>
+                  <button type="button" class="switch-pill" id="btnHaulYearEnd" onclick="app.setHaulMode('yearend')">🗓️ Akhir Tahun (31 Des)</button>
+                  <button type="button" class="switch-pill" id="btnHaulCustom" onclick="app.setHaulMode('custom')">⚙️ Tanggal Kustom</button>
+                </div>
+              </div>
+              <div style="flex: 1; min-width: 260px;">
+                <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 8px;">2. Harga Emas Acuan (Nisab 85 Gram)</label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="position: relative; flex: 1;">
+                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;">Rp</span>
+                    <input type="number" class="form-input" id="inpZakatGoldPrice" value="1500000" style="padding-left: 36px; font-weight: 700;" oninput="app.recalcZakatUI()">
+                  </div>
+                  <span style="font-size: 0.82rem; color: var(--text-muted); white-space: nowrap;">/ gram</span>
+                  <button type="button" class="btn-sm-action" onclick="app.resetGoldPrice()" title="Kembalikan ke standar BAZNAS Rp 1.500.000">Reset</button>
+                </div>
+                <small style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 4px;">Batas Nisab otomatis = 85 × Harga Emas = <strong id="lblNisabValueText" style="color: var(--accent-amber);">Rp 127.500.000</strong></small>
+              </div>
+            </div>
+          </div>
+
+          <!-- KARTU UTAMA: ZAKAT MAL KELUARGA (HARTA SIMPANAN) -->
+          <div class="card" style="margin-bottom: 24px; padding: 22px; border-top: 4px solid var(--accent-emerald);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <h3 style="font-weight: 800; font-size: 1.2rem; margin: 0;">Zakat Mal (Harta, Tabungan & Portofolio)</h3>
+                  <span id="badgeZakatStatus" style="font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3);">🟢 WAJIB ZAKAT MAL</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.82rem; margin-top: 4px;">Dihitung dari total Kas Likuid bank + Portofolio Investasi dikurangi Utang Lancar keluarga.</p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-accent-blue" onclick="app.quickPayZakat('Zakat Mal')" style="padding: 8px 16px; font-size: 0.85rem;">🕌 Catat Pembayaran Zakat</button>
+              </div>
+            </div>
+
+            <!-- METRIC GRID ZAKAT MAL -->
+            <div class="metric-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px;">
+              <div style="background: var(--bg-primary); padding: 14px; border-radius: 12px; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Total Harta Terhitung</div>
+                <div style="font-size: 1.25rem; font-weight: 800; color: var(--text-main); margin-top: 4px;" id="zakatPoolVal">Rp 228.493.552</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">Kas: <span id="zakatKasSub">Rp 55,3 jt</span> | Inv: <span id="zakatInvSub">Rp 173,1 jt</span></div>
+              </div>
+              <div style="background: var(--bg-primary); padding: 14px; border-radius: 12px; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Batas Minimal Nisab</div>
+                <div style="font-size: 1.25rem; font-weight: 800; color: var(--accent-amber); margin-top: 4px;" id="zakatNisabVal">Rp 127.500.000</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">Setara 85 gr emas murni BAZNAS</div>
+              </div>
+              <div style="background: var(--bg-primary); padding: 14px; border-radius: 12px; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Total Kewajiban (2,5%)</div>
+                <div style="font-size: 1.25rem; font-weight: 800; color: var(--accent-emerald); margin-top: 4px;" id="zakatAnnualVal">Rp 5.712.338</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">Simulasi per bulan: <strong id="zakatMonthlyVal">Rp 476.028</strong></div>
+              </div>
+              <div style="background: var(--bg-primary); padding: 14px; border-radius: 12px; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Sisa Kewajiban Belum Dibayar</div>
+                <div style="font-size: 1.25rem; font-weight: 800; color: var(--accent-rose); margin-top: 4px;" id="zakatRemainingVal">Rp 5.712.338</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">Sudah ditunaikan: <strong id="zakatPaidVal">Rp 0</strong></div>
+              </div>
+            </div>
+
+            <!-- PROGRESS BAR REALISASI ZAKAT (ANTI DOUBLE-COUNT) -->
+            <div style="background: var(--bg-primary); padding: 14px; border-radius: 12px; border: 1px solid var(--border-color);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.82rem;">
+                <span style="font-weight: 600;">📊 Progres Penunaian Zakat Mal Tahun <span id="zakatYearLabel">2026</span></span>
+                <span style="font-weight: 700; color: var(--accent-emerald);" id="zakatProgressPct">0% Ditunaikan</span>
+              </div>
+              <div style="width: 100%; height: 10px; background: rgba(148, 163, 184, 0.2); border-radius: 999px; overflow: hidden;">
+                <div id="zakatProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #10B981, #38BDF8); border-radius: 999px; transition: width 0.4s ease;"></div>
+              </div>
+              <small style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: 6px;">
+                💡 <em>Anti Double-Count: Setiap transaksi yang Anda catat dengan kategori <strong>Zakat Mal</strong> akan otomatis memotong sisa kewajiban di atas.</em>
+              </small>
+            </div>
+          </div>
+
+          <!-- KARTU 2: SIMULASI ZAKAT PENGHASILAN (PROFESI BULANAN) -->
+          <div class="card" style="margin-bottom: 24px; padding: 20px;">
+            <h3 style="font-weight: 800; font-size: 1.05rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+              <span>💼 Kalkulator Zakat Penghasilan / Profesi</span>
+              <span style="font-size: 0.72rem; background: var(--bg-primary); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border-color); color: var(--text-muted);">Fatwa MUI No. 3/2003</span>
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 14px;">Zakat atas penghasilan gaji, honorarium, bonus, atau dividen yang diterima secara periodik bulanan.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; align-items: center;">
+              <div>
+                <label class="form-label">Penghasilan Bulanan (Rp)</label>
+                <input type="number" class="form-input" id="inpZakatIncomeMonthly" placeholder="Masukkan total gaji/omset bulanan" oninput="app.calcIncomeZakatUI()">
+              </div>
+              <div style="background: var(--bg-primary); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Nisab Bulanan (1/12 Nisab Emas)</div>
+                <div style="font-size: 1.1rem; font-weight: 700; color: var(--accent-amber); margin-top: 2px;" id="lblIncomeZakatNisab">Rp 10.625.000</div>
+              </div>
+              <div style="background: var(--bg-primary); padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Zakat Profesi (2,5%)</div>
+                <div style="font-size: 1.25rem; font-weight: 800; color: var(--accent-emerald); margin-top: 2px;" id="lblIncomeZakatResult">Rp 0 / bln</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KARTU 3: RIWAYAT PENYALURAN ZAKAT & SEDEKAH TAHUN INI -->
+          <div class="card" style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+              <h3 style="font-weight: 800; font-size: 1.05rem; margin: 0;">📜 Riwayat Penyaluran Zakat & Filantropi Tahun Ini</h3>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">
+                Zakat Fitrah: <strong id="lblZakatFitrahTotal" style="color: var(--accent-blue);">Rp 0</strong> | Sedekah/Infaq: <strong id="lblSedekahTotal" style="color: var(--accent-emerald);">Rp 0</strong>
+              </div>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th style="width: 45px;">No</th>
+                    <th>Tanggal</th>
+                    <th>Jenis Filantropi</th>
+                    <th>Keterangan / Penerima</th>
+                    <th style="text-align: right;">Nominal (Rp)</th>
+                  </tr>
+                </thead>
+                <tbody id="tblBodyZakatHistory">
+                  <tr>
+                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">Belum ada riwayat transaksi zakat atau sedekah tercatat tahun ini.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
 
@@ -3180,6 +3348,10 @@
       <button class="drawer-nav-item" data-view="asset-snapshot" onclick="app.navFromDrawer('asset-snapshot')">
         <span style="font-size: 1.15rem;">🏛️</span>
         <span>Total Aset & Kekayaan</span>
+      </button>
+      <button class="drawer-nav-item" data-view="zakat" onclick="app.navFromDrawer('zakat')">
+        <span style="font-size: 1.15rem;">🌙</span>
+        <span>Zakat & Filantropi</span>
       </button>
 
       <div class="drawer-section-title" style="margin-top: 18px;">Pintasan Cepat</div>
@@ -4805,6 +4977,7 @@
         else if (viewName === 'debts') this.loadDebts(forceRefresh);
         else if (viewName === 'asset-snapshot') this.loadAssetSnapshot(forceRefresh);
         else if (viewName === 'ai-assistant') this.updateAiEngineStatus();
+        else if (viewName === 'zakat') this.loadZakat(forceRefresh);
       },
 
       refreshData: function () {
@@ -8405,6 +8578,317 @@
         }
       },
 
+      // ========================================================================
+      // MODUL ZAKAT & FILANTROPI (TAHAP 49)
+      // ========================================================================
+      zakatData: null,
+      haulMode: 'ramadan',
+
+      getHijriDateInfo: function () {
+        try {
+          var now = new Date();
+          var hijriStr = new Intl.DateTimeFormat('id-ID-u-ca-islamic-umalqura', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          }).format(now);
+
+          var mFormatter = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', { month: 'numeric' });
+          var hMonth = Number(mFormatter.format(now));
+          var isRamadan = (hMonth === 9);
+
+          var diffDays = 0;
+          if (isRamadan) {
+            diffDays = 0;
+          } else if (hMonth < 9) {
+            diffDays = Math.round((9 - hMonth) * 29.53);
+          } else {
+            diffDays = Math.round((12 - hMonth + 9) * 29.53);
+          }
+
+          return {
+            hijriString: hijriStr + ' H',
+            isRamadan: isRamadan,
+            daysToRamadan: Math.max(1, diffDays)
+          };
+        } catch (e) {
+          return {
+            hijriString: '9 Jumadilakhir 1448 H',
+            isRamadan: false,
+            daysToRamadan: 82
+          };
+        }
+      },
+
+      setHaulMode: function (mode) {
+        this.haulMode = mode;
+        ['btnHaulRamadan', 'btnHaulYearEnd', 'btnHaulCustom'].forEach(function (id) {
+          var b = document.getElementById(id);
+          if (b) b.classList.remove('active');
+        });
+        if (mode === 'ramadan') {
+          var b1 = document.getElementById('btnHaulRamadan');
+          if (b1) b1.classList.add('active');
+        } else if (mode === 'yearend') {
+          var b2 = document.getElementById('btnHaulYearEnd');
+          if (b2) b2.classList.add('active');
+        } else {
+          var b3 = document.getElementById('btnHaulCustom');
+          if (b3) b3.classList.add('active');
+        }
+        this.recalcZakatUI();
+      },
+
+      resetGoldPrice: function () {
+        var inp = document.getElementById('inpZakatGoldPrice');
+        if (inp) inp.value = 1500000;
+        localStorage.removeItem('ruangdana_gold_price');
+        this.recalcZakatUI();
+      },
+
+      loadZakat: function (forceRefresh) {
+        var self = this;
+        var hInfo = this.getHijriDateInfo();
+        var elHijri = document.getElementById('lblZakatHijriDate');
+        if (elHijri) elHijri.textContent = hInfo.hijriString;
+
+        var elCountDays = document.getElementById('zakatCountdownDays');
+        var elCountTitle = document.getElementById('zakatCountdownTitle');
+        var elCountDesc = document.getElementById('zakatCountdownDesc');
+        if (hInfo.isRamadan) {
+          if (elCountDays) elCountDays.textContent = '🌙 RAMADAN';
+          if (elCountTitle) elCountTitle.textContent = 'Marhaban ya Ramadan!';
+          if (elCountDesc) elCountDesc.textContent = 'Bulan suci telah tiba. Saat yang paling utama menunaikan Zakat Mal & Zakat Fitrah keluarga.';
+        } else {
+          if (elCountDays) elCountDays.textContent = '~' + hInfo.daysToRamadan + ' Hari';
+        }
+
+        var savedGold = localStorage.getItem('ruangdana_gold_price');
+        var inpGold = document.getElementById('inpZakatGoldPrice');
+        if (savedGold && inpGold) inpGold.value = Number(savedGold);
+
+        if (self.cache.zakat && !forceRefresh) {
+          self.renderZakat(self.cache.zakat);
+          return;
+        }
+
+        var goldPrice = inpGold ? Number(inpGold.value) || 1500000 : 1500000;
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              self.cache.zakat = res;
+              self.renderZakat(res);
+            })
+            .withFailureHandler(function (err) {
+              console.error('Gagal memuat data zakat:', err);
+              self.renderZakatLocal(goldPrice);
+            })
+            .apiGetZakatData(goldPrice, self.haulMode);
+        } else {
+          self.renderZakatLocal(goldPrice);
+        }
+      },
+
+      renderZakat: function (data) {
+        this.zakatData = data;
+        var poolEl = document.getElementById('zakatPoolVal');
+        var kasEl = document.getElementById('zakatKasSub');
+        var invEl = document.getElementById('zakatInvSub');
+        var nisabEl = document.getElementById('zakatNisabVal');
+        var annEl = document.getElementById('zakatAnnualVal');
+        var monEl = document.getElementById('zakatMonthlyVal');
+        var remEl = document.getElementById('zakatRemainingVal');
+        var paidEl = document.getElementById('zakatPaidVal');
+        var badgeEl = document.getElementById('badgeZakatStatus');
+        var pctEl = document.getElementById('zakatProgressPct');
+        var barEl = document.getElementById('zakatProgressBar');
+        var yearEl = document.getElementById('zakatYearLabel');
+
+        var totalCash = data.total_cash || 0;
+        var totalInv = data.total_investments || 0;
+        var pool = data.zakat_pool || (totalCash + totalInv);
+        var nisab = data.nisab || (85 * (data.gold_price || 1500000));
+        var annual = data.annual_zakat || 0;
+        var monthly = data.monthly_zakat || Math.round(annual / 12);
+        var paid = data.paid_zakat_mal || 0;
+        var remaining = data.remaining_zakat_mal || Math.max(0, annual - paid);
+        var pct = annual > 0 ? Math.min(100, Math.round((paid / annual) * 100)) : (data.is_wajib ? 0 : 100);
+
+        if (poolEl) poolEl.textContent = this.fmtRp(pool);
+        if (kasEl) kasEl.textContent = 'Kas: ' + this.fmtRp(totalCash);
+        if (invEl) invEl.textContent = 'Inv: ' + this.fmtRp(totalInv);
+        if (nisabEl) nisabEl.textContent = this.fmtRp(nisab);
+        if (annEl) annEl.textContent = this.fmtRp(annual);
+        if (monEl) monEl.textContent = this.fmtRp(monthly);
+        if (remEl) remEl.textContent = this.fmtRp(remaining);
+        if (paidEl) paidEl.textContent = this.fmtRp(paid);
+        if (yearEl) yearEl.textContent = data.current_year || new Date().getFullYear();
+
+        if (badgeEl) {
+          if (data.is_wajib) {
+            badgeEl.className = '';
+            badgeEl.style.background = 'rgba(16, 185, 129, 0.15)';
+            badgeEl.style.color = '#10B981';
+            badgeEl.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+            badgeEl.textContent = remaining === 0 ? '🟢 LUNAS DITUNAIKAN (100%)' : '🟢 WAJIB ZAKAT MAL';
+          } else {
+            badgeEl.style.background = 'rgba(148, 163, 184, 0.15)';
+            badgeEl.style.color = '#94A3B8';
+            badgeEl.style.border = '1px solid rgba(148, 163, 184, 0.3)';
+            badgeEl.textContent = '⚪ BELUM WAJIB ZAKAT';
+          }
+        }
+
+        if (pctEl) pctEl.textContent = pct + '% Ditunaikan';
+        if (barEl) barEl.style.width = pct + '%';
+
+        // Render Riwayat Penyaluran
+        var tblBody = document.getElementById('tblBodyZakatHistory');
+        var fitrahEl = document.getElementById('lblZakatFitrahTotal');
+        var sedekahEl = document.getElementById('lblSedekahTotal');
+
+        if (fitrahEl) fitrahEl.textContent = this.fmtRp(data.paid_zakat_fitrah || 0);
+        if (sedekahEl) sedekahEl.textContent = this.fmtRp(data.paid_sedekah || 0);
+
+        if (tblBody) {
+          var txns = data.charity_txns || [];
+          if (txns.length === 0) {
+            tblBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:20px;">Belum ada riwayat transaksi zakat atau sedekah tercatat tahun ini.</td></tr>';
+          } else {
+            var html = '';
+            for (var i = 0; i < txns.length; i++) {
+              var t = txns[i];
+              var badgeColor = t.type === 'Zakat Mal' ? '#10B981' : (t.type === 'Zakat Fitrah' ? '#38BDF8' : '#F59E0B');
+              html += '<tr>' +
+                '<td style="text-align:center;">' + (i + 1) + '</td>' +
+                '<td>' + (t.date ? t.date.slice(0, 10) : '-') + '</td>' +
+                '<td><span style="font-size:0.75rem; font-weight:700; color:' + badgeColor + '; background:rgba(255,255,255,0.05); padding:2px 8px; border-radius:6px;">' + t.type + '</span></td>' +
+                '<td>' + (t.note || '-') + '</td>' +
+                '<td style="text-align:right; font-weight:700; color:var(--text-primary);">' + this.fmtRp(t.amount) + '</td>' +
+                '</tr>';
+            }
+            tblBody.innerHTML = html;
+          }
+        }
+      },
+
+      renderZakatLocal: function (goldPrice) {
+        var dash = this.cache.dashboard || {};
+        var nw = dash.net_worth || {};
+        var totalCash = Number(nw.total_cash) || 55345503;
+        var totalInv = Number(nw.total_investments_market) || 173148049;
+        var totalDebts = Number(nw.total_debts) || 0;
+        var pool = Math.max(0, totalCash + totalInv - totalDebts);
+        var nisab = 85 * goldPrice;
+        var isWajib = pool >= nisab;
+        var annual = isWajib ? Math.round(pool * 0.025) : 0;
+        var monthly = Math.round(annual / 12);
+
+        this.renderZakat({
+          total_cash: totalCash,
+          total_investments: totalInv,
+          total_debts: totalDebts,
+          zakat_pool: pool,
+          gold_price: goldPrice,
+          nisab: nisab,
+          is_wajib: isWajib,
+          annual_zakat: annual,
+          monthly_zakat: monthly,
+          paid_zakat_mal: 0,
+          remaining_zakat_mal: annual,
+          pct_paid: 0,
+          current_year: new Date().getFullYear(),
+          charity_txns: []
+        });
+      },
+
+      recalcZakatUI: function () {
+        var inp = document.getElementById('inpZakatGoldPrice');
+        var goldPrice = inp ? Number(inp.value) || 1500000 : 1500000;
+        localStorage.setItem('ruangdana_gold_price', goldPrice);
+
+        var lblNisab = document.getElementById('lblNisabValueText');
+        if (lblNisab) lblNisab.textContent = this.fmtRp(85 * goldPrice);
+
+        if (this.zakatData) {
+          var d = Object.assign({}, this.zakatData);
+          d.gold_price = goldPrice;
+          d.nisab = 85 * goldPrice;
+          d.is_wajib = d.zakat_pool >= d.nisab;
+          d.annual_zakat = d.is_wajib ? Math.round(d.zakat_pool * 0.025) : 0;
+          d.monthly_zakat = Math.round(d.annual_zakat / 12);
+          d.remaining_zakat_mal = Math.max(0, d.annual_zakat - (d.paid_zakat_mal || 0));
+          d.pct_paid = d.annual_zakat > 0 ? Math.min(100, Math.round(((d.paid_zakat_mal || 0) / d.annual_zakat) * 100)) : (d.is_wajib ? 0 : 100);
+          this.renderZakat(d);
+        } else {
+          this.renderZakatLocal(goldPrice);
+        }
+      },
+
+      calcIncomeZakatUI: function () {
+        var inp = document.getElementById('inpZakatIncomeMonthly');
+        var amt = inp ? Number(inp.value) || 0 : 0;
+        var inpGold = document.getElementById('inpZakatGoldPrice');
+        var goldPrice = inpGold ? Number(inpGold.value) || 1500000 : 1500000;
+        var monthlyNisab = Math.round((85 * goldPrice) / 12);
+
+        var lblNisab = document.getElementById('lblIncomeZakatNisab');
+        if (lblNisab) lblNisab.textContent = this.fmtRp(monthlyNisab);
+
+        var lblRes = document.getElementById('lblIncomeZakatResult');
+        if (lblRes) {
+          if (amt >= monthlyNisab) {
+            var z = Math.round(amt * 0.025);
+            lblRes.textContent = this.fmtRp(z) + ' / bln (Wajib)';
+            lblRes.style.color = 'var(--accent-emerald)';
+          } else if (amt > 0) {
+            lblRes.textContent = 'Rp 0 (Belum Nisab)';
+            lblRes.style.color = 'var(--text-muted)';
+          } else {
+            lblRes.textContent = 'Rp 0 / bln';
+            lblRes.style.color = 'var(--text-muted)';
+          }
+        }
+      },
+
+      quickPayZakat: function (zakatType) {
+        this.openAddTxnModal();
+        var typeSel = document.getElementById('tType');
+        if (typeSel) {
+          typeSel.value = 'expense';
+          this.onTypeChange('expense');
+        }
+
+        var catSel = document.getElementById('tCat');
+        if (catSel) {
+          var targetCatName = zakatType || 'Zakat Mal';
+          var found = false;
+          for (var i = 0; i < catSel.options.length; i++) {
+            if (catSel.options[i].text.toLowerCase().indexOf(targetCatName.toLowerCase()) !== -1) {
+              catSel.selectedIndex = i;
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            var opt = document.createElement('option');
+            opt.value = 'CAT-ZAKAT-MAL';
+            opt.textContent = '🏛️ Zakat Mal';
+            catSel.appendChild(opt);
+            catSel.value = 'CAT-ZAKAT-MAL';
+          }
+        }
+
+        var merchEl = document.getElementById('tMerchant');
+        if (merchEl) merchEl.value = 'BAZNAS / Lembaga Amil Zakat';
+
+        var amtEl = document.getElementById('tAmt');
+        if (amtEl && this.zakatData) {
+          var rem = this.zakatData.remaining_zakat_mal || this.zakatData.annual_zakat || 0;
+          if (rem > 0) amtEl.value = rem;
+        }
+      },
+
 
       // ========================================================================
       // FITUR: SUB-TAB TRANSAKSI (TABEL VS KALENDER ARUS KAS HARIAN)
@@ -8833,8 +9317,10 @@
           { catName: 'Hiburan', keys: ['bioskop', 'cinema', 'xxi', 'cgv', 'nonton', 'game', 'steam', 'playstation', 'liburan', 'wisata', 'hotel', 'villa', 'pantai', 'rekreasi', 'tiket masuk', 'karaoke'] },
           // Langganan Digital
           { catName: 'Langganan', keys: ['spotify', 'netflix', 'youtube premium', 'disney', 'canva', 'chatgpt', 'icloud', 'google one', 'hosting', 'domain'] },
-          // Donasi & Amal
-          { catName: 'Donasi', keys: ['sedekah', 'donasi', 'infaq', 'zakat', 'masjid', 'gereja', 'kotak amal', 'santunan', 'sumbangan'] },
+          // Zakat & Filantropi
+          { catName: 'Zakat Mal', keys: ['zakat mal', 'zakat tabungan', 'zakat simpanan', 'zakat emas'] },
+          { catName: 'Zakat Fitrah', keys: ['zakat fitrah', 'fitrah', 'beras zakat'] },
+          { catName: 'Sedekah & Infaq', keys: ['sedekah', 'donasi', 'infaq', 'masjid', 'gereja', 'kotak amal', 'santunan', 'sumbangan'] },
           // Asuransi
           { catName: 'Asuransi', keys: ['asuransi', 'bpjs', 'prudential', 'allianz', 'manulife', 'premi'] },
           // Hutang & Angsuran
