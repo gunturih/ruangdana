@@ -5046,6 +5046,14 @@
               if (data && data.ai_config) {
                 if (data.ai_config.provider) localStorage.setItem('ruangdana_ai_provider', data.ai_config.provider);
                 if (data.ai_config.api_key) localStorage.setItem('ruangdana_ai_api_key', data.ai_config.api_key);
+                if (data.ai_config.provider_keys) {
+                  window.__providerKeys = data.ai_config.provider_keys;
+                  for (var pk in data.ai_config.provider_keys) {
+                    if (data.ai_config.provider_keys[pk]) {
+                      localStorage.setItem('ruangdana_key_' + pk, data.ai_config.provider_keys[pk]);
+                    }
+                  }
+                }
               }
               if (data && data.gemini_api_key) {
                 localStorage.setItem('ruangdana_gemini_api_key', data.gemini_api_key);
@@ -6821,6 +6829,21 @@
         var statusBox = document.getElementById('geminiKeyStatusBox');
         if (statusBox) statusBox.style.display = 'none';
 
+        // Otomatis muat kunci yang sesuai dengan provider yang dipilih
+        var pKey = '';
+        if (window.__providerKeys && window.__providerKeys[provider]) {
+          pKey = window.__providerKeys[provider];
+        } else {
+          pKey = localStorage.getItem('ruangdana_key_' + provider) || '';
+          if (!pKey && provider === localStorage.getItem('ruangdana_ai_provider')) {
+            pKey = localStorage.getItem('ruangdana_ai_api_key') || '';
+          }
+          if (!pKey && provider === 'gemini') {
+            pKey = localStorage.getItem('ruangdana_gemini_api_key') || '';
+          }
+        }
+        if (input) input.value = pKey;
+
         if (provider === 'local') {
           if (wrapKey) wrapKey.style.display = 'none';
           if (box) {
@@ -6898,6 +6921,16 @@
         var self = this;
 
         if (provider !== 'local' && !key) {
+          if (window.__providerKeys && window.__providerKeys[provider]) {
+            key = window.__providerKeys[provider];
+            if (input) input.value = key;
+          } else {
+            key = localStorage.getItem('ruangdana_key_' + provider) || '';
+            if (input && key) input.value = key;
+          }
+        }
+
+        if (provider !== 'local' && !key) {
           if (box) {
             box.style.display = 'block';
             box.style.background = 'rgba(245, 158, 11, 0.15)';
@@ -6972,6 +7005,9 @@
 
         localStorage.setItem('ruangdana_ai_provider', provider);
         localStorage.setItem('ruangdana_ai_api_key', key);
+        localStorage.setItem('ruangdana_key_' + provider, key);
+        if (!window.__providerKeys) window.__providerKeys = {};
+        window.__providerKeys[provider] = key;
         if (provider === 'gemini') {
           localStorage.setItem('ruangdana_gemini_api_key', key);
         }
