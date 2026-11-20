@@ -6804,17 +6804,26 @@
       // MULTI-AI ENGINE CONTROLLER & CLOUD SYNC (GROQ, GEMINI, OPENAI, DEEPSEEK)
       // ========================================================================
       openAiConfigModal: function () {
+        var self = this;
         var provider = localStorage.getItem('ruangdana_ai_provider') || 'local';
-        var key = localStorage.getItem('ruangdana_ai_api_key') || localStorage.getItem('ruangdana_gemini_api_key') || '';
-        
         var sel = document.getElementById('selAiProvider');
         if (sel) sel.value = provider;
         
-        var input = document.getElementById('inpGeminiKey');
-        if (input) input.value = key;
-        
         this.onAiProviderChange(provider);
         this.openModal('modalGeminiKey');
+
+        // Tarik kunci terbaru langsung dari Properti Skrip Google Apps Script agar form otomatis terisi
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (cfg) {
+              if (cfg && cfg.provider_keys) {
+                window.__providerKeys = cfg.provider_keys;
+                var currentSel = document.getElementById('selAiProvider');
+                if (currentSel) self.onAiProviderChange(currentSel.value);
+              }
+            })
+            .apiGetAiConfig();
+        }
       },
 
       openGeminiKeyModal: function () {
@@ -6842,7 +6851,17 @@
             pKey = localStorage.getItem('ruangdana_gemini_api_key') || '';
           }
         }
-        if (input) input.value = pKey;
+
+        // Jangan biarkan kunci provider lain tertinggal di input box
+        if (input) {
+          var cur = (input.value || '').trim();
+          if (provider === 'groq' && (cur.startsWith('AQ.') || cur.startsWith('AIza') || cur.startsWith('sk-'))) input.value = '';
+          else if (provider === 'openai' && (cur.startsWith('AQ.') || cur.startsWith('AIza') || cur.startsWith('gsk_'))) input.value = '';
+          else if (provider === 'deepseek' && (cur.startsWith('AQ.') || cur.startsWith('AIza') || cur.startsWith('gsk_'))) input.value = '';
+          else if (provider === 'gemini' && (cur.startsWith('gsk_') || cur.startsWith('sk-'))) input.value = '';
+          
+          if (pKey) input.value = pKey;
+        }
 
         if (provider === 'local') {
           if (wrapKey) wrapKey.style.display = 'none';
@@ -6861,30 +6880,34 @@
             box.style.background = 'rgba(16, 185, 129, 0.12)';
             box.style.border = '1px solid rgba(16, 185, 129, 0.3)';
             box.innerHTML = '⚡ <strong>Groq Cloud (Llama 3.3 70B):</strong> Tercepat di dunia (~0.3 detik) & <strong>100% GRATIS tanpa kartu kredit!</strong><br>' +
-              '👉 Buat kunci gratis dalam 30 detik di: <a href="https://console.groq.com/keys" target="_blank" style="color:var(--accent-emerald); font-weight:700; text-decoration:underline;">console.groq.com/keys</a> (Format kunci diawali <code>gsk_...</code>).';
+              '👉 Buat kunci gratis dalam 30 detik di: <a href="https://console.groq.com/keys" target="_blank" style="color:var(--accent-emerald); font-weight:700; text-decoration:underline;">console.groq.com/keys</a> (Format kunci diawali <code>gsk_...</code>).<br>' +
+              '<em>💡 Jika Anda sudah memasukkan <code>GROQ_API_KEY</code> di Properti Skrip, kolom kunci di bawah otomatis tersambung.</em>';
             if (lbl) lbl.textContent = 'Kunci API Groq (gsk_...)';
-            if (input) input.placeholder = 'Tempel kunci resmi Groq berawalan gsk_... di sini';
+            if (input) input.placeholder = 'Tempel kunci resmi Groq berawalan gsk_... di sini (atau kosongkan jika di Properti Skrip)';
           } else if (provider === 'gemini') {
             box.style.background = 'rgba(56, 189, 248, 0.12)';
             box.style.border = '1px solid rgba(56, 189, 248, 0.3)';
-            box.innerHTML = '🟢 <strong>Google Gemini (Gemini 1.5 Flash):</strong> Model resmi Google AI Studio (Gratis).<br>' +
-              '👉 Buat kunci gratis di: <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent-blue); font-weight:700; text-decoration:underline;">aistudio.google.com/app/apikey</a> (Format kunci diawali <code>AIzaSy...</code>).';
-            if (lbl) lbl.textContent = 'Kunci API Google Gemini (AIzaSy...)';
-            if (input) input.placeholder = 'Tempel kunci resmi Google AI Studio berawalan AIzaSy... di sini';
+            box.innerHTML = '🟢 <strong>Google Gemini (Gemini 1.5 Flash / 2.0):</strong> Model resmi Google AI Studio (Gratis).<br>' +
+              '👉 Buat kunci gratis di: <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent-blue); font-weight:700; text-decoration:underline;">aistudio.google.com/app/apikey</a> (Mendukung format resmi Google).<br>' +
+              '<em>💡 Jika Anda sudah memasukkan <code>GEMINI_API_KEY</code> di Properti Skrip, kolom kunci di bawah otomatis tersambung.</em>';
+            if (lbl) lbl.textContent = 'Kunci API Google Gemini';
+            if (input) input.placeholder = 'Tempel kunci resmi Google AI Studio di sini (atau kosongkan jika di Properti Skrip)';
           } else if (provider === 'openai') {
             box.style.background = 'rgba(168, 85, 247, 0.12)';
             box.style.border = '1px solid rgba(168, 85, 247, 0.3)';
             box.innerHTML = '🤖 <strong>OpenAI ChatGPT (GPT-4o-mini):</strong> Kecerdasan percakapan standar industri.<br>' +
-              '👉 Dapatkan kunci di: <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--accent-purple); font-weight:700; text-decoration:underline;">platform.openai.com/api-keys</a> (Format kunci diawali <code>sk-...</code>).';
+              '👉 Dapatkan kunci di: <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--accent-purple); font-weight:700; text-decoration:underline;">platform.openai.com/api-keys</a> (Format kunci diawali <code>sk-...</code>).<br>' +
+              '<em>💡 Jika Anda sudah memasukkan <code>CHATGPT_API_KEY</code> di Properti Skrip, kolom kunci di bawah otomatis tersambung.</em>';
             if (lbl) lbl.textContent = 'Kunci API OpenAI (sk-...)';
-            if (input) input.placeholder = 'Tempel kunci OpenAI berawalan sk-... di sini';
+            if (input) input.placeholder = 'Tempel kunci OpenAI berawalan sk-... di sini (atau kosongkan jika di Properti Skrip)';
           } else if (provider === 'deepseek') {
             box.style.background = 'rgba(2, 132, 199, 0.12)';
             box.style.border = '1px solid rgba(2, 132, 199, 0.3)';
             box.innerHTML = '🔵 <strong>DeepSeek (DeepSeek-V3):</strong> Penalaran logika & matematika mendalam.<br>' +
-              '👉 Dapatkan kunci di: <a href="https://platform.deepseek.com/api_keys" target="_blank" style="color:var(--accent-blue); font-weight:700; text-decoration:underline;">platform.deepseek.com/api_keys</a> (Format kunci diawali <code>sk-...</code>).';
+              '👉 Dapatkan kunci di: <a href="https://platform.deepseek.com/api_keys" target="_blank" style="color:var(--accent-blue); font-weight:700; text-decoration:underline;">platform.deepseek.com/api_keys</a> (Format kunci diawali <code>sk-...</code>).<br>' +
+              '<em>💡 Jika Anda sudah memasukkan <code>DEEPSEEK_API_KEY</code> di Properti Skrip, kolom kunci di bawah otomatis tersambung.</em>';
             if (lbl) lbl.textContent = 'Kunci API DeepSeek (sk-...)';
-            if (input) input.placeholder = 'Tempel kunci DeepSeek berawalan sk-... di sini';
+            if (input) input.placeholder = 'Tempel kunci DeepSeek berawalan sk-... di sini (atau kosongkan jika di Properti Skrip)';
           } else if (provider === 'openrouter') {
             box.style.background = 'rgba(245, 158, 11, 0.12)';
             box.style.border = '1px solid rgba(245, 158, 11, 0.3)';
@@ -6920,25 +6943,35 @@
         var btn = document.getElementById('btnTestGemini');
         var self = this;
 
-        if (provider !== 'local' && !key) {
-          if (window.__providerKeys && window.__providerKeys[provider]) {
-            key = window.__providerKeys[provider];
-            if (input) input.value = key;
-          } else {
-            key = localStorage.getItem('ruangdana_key_' + provider) || '';
-            if (input && key) input.value = key;
-          }
-        }
-
-        if (provider !== 'local' && !key) {
+        if (provider === 'local') {
           if (box) {
             box.style.display = 'block';
-            box.style.background = 'rgba(245, 158, 11, 0.15)';
-            box.style.color = '#F59E0B';
-            box.style.border = '1px solid rgba(245, 158, 11, 0.3)';
-            box.innerHTML = '⚠️ Masukkan kunci API untuk ' + provider.toUpperCase() + ' terlebih dahulu.';
+            box.style.background = 'rgba(16, 185, 129, 0.15)';
+            box.style.color = '#10B981';
+            box.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+            box.innerHTML = '✅ Mode Spreadsheet Riil aktif: 100% instan 0 detik tanpa internet & tanpa API key.';
           }
           return;
+        }
+
+        // Cek kecocokan format kunci dengan provider. Jika kunci di input salah atau kosong, otomatis sinkronkan dari memori
+        if (window.__providerKeys) {
+          if (provider === 'groq' && (!key || !key.startsWith('gsk_')) && window.__providerKeys.groq) {
+            key = window.__providerKeys.groq;
+            if (input) input.value = key;
+          } else if (provider === 'openai' && (!key || !key.startsWith('sk-') || key.startsWith('sk-484')) && window.__providerKeys.openai) {
+            key = window.__providerKeys.openai;
+            if (input) input.value = key;
+          } else if (provider === 'deepseek' && (!key || !key.startsWith('sk-') || key.startsWith('sk-proj-')) && window.__providerKeys.deepseek) {
+            key = window.__providerKeys.deepseek;
+            if (input) input.value = key;
+          } else if (provider === 'gemini' && (!key || key.startsWith('gsk_') || key.startsWith('sk-')) && window.__providerKeys.gemini) {
+            key = window.__providerKeys.gemini;
+            if (input) input.value = key;
+          } else if (!key && window.__providerKeys[provider]) {
+            key = window.__providerKeys[provider];
+            if (input) input.value = key;
+          }
         }
 
         if (box) {
@@ -6963,6 +6996,10 @@
                 box.style.color = '#10B981';
                 box.style.border = '1px solid rgba(16, 185, 129, 0.3)';
                 box.innerHTML = '🎉 ' + (res.message || 'Koneksi Berhasil!');
+                if (res.active_key && input && !input.value) {
+                  input.value = res.active_key;
+                  localStorage.setItem('ruangdana_key_' + provider, res.active_key);
+                }
               } else {
                 box.style.background = 'rgba(239, 68, 68, 0.15)';
                 box.style.color = '#F87171';
@@ -7505,7 +7542,7 @@
           }
         });
 
-        var junkWordFilter = /^(grabfood|gofood|shopee|delivery|delivery\]|pickup|takeaway|pesanan|order|kasir|waktu|tanggal|perkiraan|pengiriman|alamat|telepon|telp|npwp|nomor|nota|subtotal|piutang|plutang|kembali|tunai|cash|diskon|hemat|kupon|scan|biaya\s*packing|packing|ongkir|driver|resto|menu\s*tertentu|jumlah\s*produk|talete|tomohon)/i;
+        var junkWordFilter = /^(grabfood|gofood|shopee|delivery|pickup|takeaway|pesanan|order|kasir|waktu|tanggal|perkiraan|pengiriman|alamat|telepon|telp|npwp|nomor|nota|subtotal|piutang|plutang|kembali|tunai|cash|diskon|hemat|kupon|scan|biaya\s*packing|packing|ongkir|driver|resto|menu\s*tertentu|jumlah\s*produk|talete|tomohon)/i;
 
         for (var k = 0; k < lines.length; k++) {
           var lineItem = lines[k].trim();
