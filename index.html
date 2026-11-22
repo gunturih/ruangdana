@@ -1596,48 +1596,58 @@
           </div>
         </div>
         <div class="header-right" style="display: flex; align-items: center; gap: 8px;">
-          <!-- Profile Badge / Switcher Button -->
-          <div class="user-profile-badge" id="btnUserSwitcher" onclick="app.openProfileModal(false)"
-            title="Klik untuk beralih profil Suami / Istri">
-            <span id="activeUserAvatar">👨</span>
-            <span id="activeUserName" style="font-weight: 600;">Suami</span>
-            <span style="font-size: 0.65rem; color: var(--text-muted); margin-left: 2px;">▾</span>
-          </div>
+          <!-- Hidden hooks to maintain script compatibility with activeUser -->
+          <span id="activeUserAvatar" style="display: none;">👨</span>
+          <span id="activeUserName" style="display: none;">Suami</span>
           <button class="action-btn-circle" id="btnRefreshData" title="Refresh Data dari Google Sheets"
             onclick="app.refreshData()">🔄</button>
-          <button class="action-btn-circle" id="btnPrivacy" title="Mode Privasi (Sensor Saldo)"
-            onclick="app.togglePrivacy()">👁️</button>
-          <button class="action-btn-circle" id="btnTheme" title="Ganti Mode Gelap/Terang"
-            onclick="app.toggleTheme()">🌓</button>
-          <button class="action-btn-circle" id="btnGasConfig" title="Koneksi Backend Google Apps Script"
-            onclick="app.openGasConfigModal()">⚙️</button>
+          <button class="action-btn-circle" id="btnSettings" title="Pengaturan Sistem & Profil"
+            onclick="app.openSettingsModal()">⚙️</button>
         </div>
       </header>
 
       <div class="content-body">
         <!-- 1. DASHBOARD -->
         <section class="view-section active" id="view-dashboard">
+          <!-- HERO CARD: FOKUS ARUS KAS & KENDALI BUDGET BULAN INI -->
           <div class="hero-card">
-            <div>
-              <span class="hero-stat-label">Kekayaan Bersih Keluarga (Net Worth)</span>
-              <div class="hero-balance currency-val" id="dashNetWorth">Rp 0</div>
-            </div>
-            <div class="hero-stats-row">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px;">
               <div>
-                <span class="hero-stat-label">Total Kas Likuid</span>
-                <div class="hero-stat-val currency-val" id="dashCash" style="color: #BAE6FD;">Rp 0</div>
+                <span class="hero-stat-label">Arus Kas Bersih Bulan Ini</span>
+                <div class="hero-balance currency-val" id="dashNetCash" style="margin-top: 2px;">Rp 0</div>
               </div>
+              <div id="badgeNetCashStatus" style="font-size: 0.78rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; background: rgba(255, 255, 255, 0.15); color: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.25); display: inline-flex; align-items: center; gap: 4px;">
+                ⚖️ Arus Kas Seimbang
+              </div>
+            </div>
+
+            <!-- Pilar Pendapatan vs Pengeluaran Berdampingan -->
+            <div class="hero-stats-row" style="margin: 14px 0 14px 0; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.15); display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
               <div>
                 <span class="hero-stat-label">Pendapatan Bulan Ini</span>
-                <div class="hero-stat-val currency-val" id="dashIncome" style="color: #6EE7B7;">+Rp 0</div>
+                <div class="hero-stat-val currency-val" id="dashIncome" style="color: #6EE7B7; font-size: 1.15rem; font-weight: 700;">+Rp 0</div>
               </div>
               <div>
                 <span class="hero-stat-label">Pengeluaran Bulan Ini</span>
-                <div class="hero-stat-val currency-val" id="dashExpense" style="color: #FDA4AF;">-Rp 0</div>
+                <div class="hero-stat-val currency-val" id="dashExpense" style="color: #FDA4AF; font-size: 1.15rem; font-weight: 700;">-Rp 0</div>
               </div>
-              <div>
-                <span class="hero-stat-label">Arus Kas Bersih</span>
-                <div class="hero-stat-val currency-val" id="dashNetCash" style="color: #FFFFFF;">Rp 0</div>
+            </div>
+
+            <!-- Widget Ringkasan Anggaran Makro Bulan Ini -->
+            <div id="dashBudgetBox" style="background: rgba(15, 23, 42, 0.35); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+                <span style="font-size: 0.8rem; font-weight: 700; color: #BAE6FD; display: flex; align-items: center; gap: 6px;">
+                  🎯 Ringkasan Anggaran Bulanan
+                </span>
+                <span id="dashBudgetPctLabel" style="font-size: 0.78rem; font-weight: 700; color: #FFFFFF;">
+                  0% terpakai
+                </span>
+              </div>
+              <div style="width: 100%; height: 8px; background: rgba(255, 255, 255, 0.15); border-radius: 999px; overflow: hidden; margin-bottom: 8px;">
+                <div id="dashBudgetBar" style="width: 0%; height: 100%; background: #10B981; border-radius: 999px; transition: width 0.4s ease;"></div>
+              </div>
+              <div id="dashBudgetSubtext" style="font-size: 0.76rem; color: rgba(255, 255, 255, 0.85); line-height: 1.4;">
+                Memuat data anggaran...
               </div>
             </div>
 
@@ -1660,21 +1670,26 @@
           </div>
 
           <div class="metric-grid">
+            <div class="card" style="border-left: 3px solid var(--accent-blue);">
+              <span class="card-title">🏛️ Kekayaan Bersih (Net Worth)</span>
+              <div class="card-val-big currency-val" id="dashNetWorth" style="color: var(--accent-blue);">Rp 0</div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">Total seluruh aset likuid & investasi dikurangi utang</p>
+            </div>
             <div class="card">
-              <span class="card-title">Portofolio Investasi</span>
+              <span class="card-title">💰 Total Kas Likuid</span>
+              <div class="card-val-big currency-val" id="dashCash" style="color: #BAE6FD;">Rp 0</div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">Saldo seluruh dompet & rekening bank</p>
+            </div>
+            <div class="card">
+              <span class="card-title">📈 Portofolio Investasi</span>
               <div class="card-val-big currency-val" id="dashInvVal">Rp 0</div>
               <p style="font-size: 0.82rem; font-weight: 700; margin-top: 6px;" class="currency-val" id="dashInvPnl">
                 Unrealized P&L: Rp 0</p>
             </div>
             <div class="card">
-              <span class="card-title">Aset Fisik (Rumah & Kendaraan)</span>
-              <div class="card-val-big currency-val" id="dashAssetVal">Rp 0</div>
-              <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">Estimasi nilai pasar wajar</p>
-            </div>
-            <div class="card">
-              <span class="card-title">Sisa Pokok Utang</span>
+              <span class="card-title">💳 Sisa Pokok Utang</span>
               <div class="card-val-big currency-val" id="dashDebtVal" style="color: var(--accent-rose);">Rp 0</div>
-              <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">KPR & Kredit aktif</p>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">KPR & Pinjaman aktif</p>
             </div>
           </div>
 
@@ -3761,6 +3776,84 @@
     </div>
   </div>
 
+  <!-- ========================================================================
+       MODAL: PENGATURAN SISTEM, PROFIL & PREFERENSI TAMPILAN TERPADU
+       ======================================================================== -->
+  <div class="modal-overlay" id="modalUnifiedSettings" style="z-index: 10005;">
+    <div class="modal-content" style="max-width: 520px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.3rem;">⚙️</span>
+          <h3 style="margin: 0; font-weight: 800; font-size: 1.2rem;">Pengaturan Sistem</h3>
+        </div>
+        <button type="button" class="btn-sm-action" onclick="app.closeModal('modalUnifiedSettings')">✕</button>
+      </div>
+
+      <!-- 1. Pemilihan Profil Aktif -->
+      <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+        <label class="form-label" style="font-weight: 700; margin-bottom: 8px; display: block;">👤 Profil Pengguna Aktif</label>
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">Pilih akun yang sedang menggunakan aplikasi saat ini:</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <button type="button" id="settingBtnUserSuami" class="btn-sm-action" style="padding: 10px; font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 10px;" onclick="app.setProfileFromSettings('suami')">
+            <span>👨</span> Suami
+          </button>
+          <button type="button" id="settingBtnUserIstri" class="btn-sm-action" style="padding: 10px; font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 6px; border-radius: 10px;" onclick="app.setProfileFromSettings('istri')">
+            <span>👩</span> Istri
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. Preferensi Tampilan (Tema & Privasi) -->
+      <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+        <label class="form-label" style="font-weight: 700; margin-bottom: 10px; display: block;">🎨 Tampilan & Privasi</label>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: 600; font-size: 0.85rem;" id="settingThemeStatus">🌙 Mode Gelap</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Ubah warna antarmuka gelap/terang</div>
+            </div>
+            <button type="button" class="btn-sm-action" onclick="app.toggleThemeFromSettings()" style="padding: 6px 14px;">Ganti Tema</button>
+          </div>
+          <div style="height: 1px; background: var(--border-color);"></div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: 600; font-size: 0.85rem;" id="settingPrivacyStatus">👁️ Mode Privasi</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Sensor nominal saldo saat di tempat umum</div>
+            </div>
+            <button type="button" class="btn-sm-action" onclick="app.togglePrivacyFromSettings()" style="padding: 6px 14px;">Ubah Sensor</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Asisten AI Multi-Engine -->
+      <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 700; font-size: 0.88rem;">🤖 Asisten AI Multi-Engine</div>
+            <div style="font-size: 0.76rem; color: var(--text-muted);">Groq (Llama 3.3), Google Gemini, ChatGPT, DeepSeek</div>
+          </div>
+          <button type="button" class="btn-sm-action" onclick="app.closeModal('modalUnifiedSettings'); app.openAiConfigModal();" style="padding: 6px 12px; font-weight: 600;">Kelola AI</button>
+        </div>
+      </div>
+
+      <!-- 4. Koneksi Backend Google Apps Script -->
+      <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+        <label class="form-label" style="font-weight: 700; margin-bottom: 6px; display: block;">🔗 Koneksi Google Apps Script</label>
+        <p style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 8px;">URL Web App untuk sinkronisasi Google Sheets:</p>
+        <input type="url" class="form-input" id="inputSettingsGasUrl" placeholder="https://script.google.com/macros/s/.../exec" style="font-size: 0.8rem; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: flex-end; gap: 8px;">
+          <button type="button" class="btn-sm-action" onclick="app.testGasConnection('settings')" style="font-size: 0.78rem;">🧪 Tes Koneksi</button>
+          <button type="button" class="btn-accent-blue" onclick="app.saveGasConfigFromSettings()" style="font-size: 0.78rem; padding: 6px 14px;">Simpan URL</button>
+        </div>
+        <div id="settingsGasTestStatus" style="font-size: 0.78rem; margin-top: 8px; padding: 6px 10px; border-radius: 6px; display: none;"></div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button type="button" class="btn-sm-action" onclick="app.closeModal('modalUnifiedSettings')">Tutup</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: PENGATURAN KONEKSI BACKEND (GOOGLE APPS SCRIPT URL) -->
   <div class="modal-overlay" id="modalGasConfig" style="z-index: 10005;">
     <div class="modal-content" style="max-width: 540px;">
@@ -5078,21 +5171,90 @@
         if (!data) return;
         var nw = data.net_worth;
         var fs = data.financial_summary;
+        var bs = data.budget_summary;
 
-        document.getElementById('dashNetWorth').textContent = this.fmtRp(nw.net_worth);
-        document.getElementById('dashCash').textContent = this.fmtRp(nw.total_cash);
-        document.getElementById('dashIncome').textContent = '+' + this.fmtRp(fs.income_total);
-        document.getElementById('dashExpense').textContent = '-' + this.fmtRp(fs.expense_total);
-        document.getElementById('dashNetCash').textContent = (fs.net_cash_flow >= 0 ? '+' : '') + this.fmtRp(fs.net_cash_flow);
-        document.getElementById('dashInvVal').textContent = this.fmtRp(nw.total_investments_market);
+        // 1. Arus Kas Bersih di Hero Card
+        var netCash = Number(fs.net_cash_flow) || 0;
+        var dashNetCashEl = document.getElementById('dashNetCash');
+        var badgeStatusEl = document.getElementById('badgeNetCashStatus');
+        if (dashNetCashEl) {
+          dashNetCashEl.textContent = (netCash >= 0 ? '+' : '') + this.fmtRp(netCash);
+          dashNetCashEl.style.color = netCash >= 0 ? '#6EE7B7' : '#FDA4AF';
+        }
+        if (badgeStatusEl) {
+          if (netCash > 0) {
+            badgeStatusEl.innerHTML = '▲ Surplus Bulan Ini';
+            badgeStatusEl.style.background = 'rgba(16, 185, 129, 0.25)';
+            badgeStatusEl.style.color = '#6EE7B7';
+            badgeStatusEl.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          } else if (netCash < 0) {
+            badgeStatusEl.innerHTML = '▼ Defisit Bulan Ini';
+            badgeStatusEl.style.background = 'rgba(244, 63, 94, 0.25)';
+            badgeStatusEl.style.color = '#FDA4AF';
+            badgeStatusEl.style.borderColor = 'rgba(244, 63, 94, 0.4)';
+          } else {
+            badgeStatusEl.innerHTML = '⚖️ Arus Kas Seimbang';
+            badgeStatusEl.style.background = 'rgba(255, 255, 255, 0.15)';
+            badgeStatusEl.style.color = '#FFFFFF';
+            badgeStatusEl.style.borderColor = 'rgba(255, 255, 255, 0.25)';
+          }
+        }
+
+        // 2. Pendapatan & Pengeluaran Bulan Ini
+        var dashIncEl = document.getElementById('dashIncome');
+        if (dashIncEl) dashIncEl.textContent = '+' + this.fmtRp(fs.income_total);
+        var dashExpEl = document.getElementById('dashExpense');
+        if (dashExpEl) dashExpEl.textContent = '-' + this.fmtRp(fs.expense_total);
+
+        // 3. Ringkasan Anggaran Makro Bulan Ini
+        var barEl = document.getElementById('dashBudgetBar');
+        var pctEl = document.getElementById('dashBudgetPctLabel');
+        var subtextEl = document.getElementById('dashBudgetSubtext');
+        if (bs && bs.has_budget) {
+          var pct = Math.min(100, bs.percentage || 0);
+          if (barEl) {
+            barEl.style.width = pct + '%';
+            if (bs.percentage > 100) barEl.style.background = '#F43F5E';
+            else if (bs.percentage >= 80) barEl.style.background = '#F59E0B';
+            else barEl.style.background = '#10B981';
+          }
+          if (pctEl) {
+            pctEl.textContent = bs.percentage + '% terpakai';
+            pctEl.style.color = bs.percentage > 100 ? '#FDA4AF' : (bs.percentage >= 80 ? '#FDE68A' : '#6EE7B7');
+          }
+          if (subtextEl) {
+            var sisaStr = bs.remaining > 0 ? ('Sisa Plafon Aman: <strong>' + this.fmtRp(bs.remaining) + '</strong>') : '<strong style="color:#FDA4AF;">Overbudget melampaui plafon</strong>';
+            subtextEl.innerHTML = 'Realisasi <strong>' + this.fmtRp(bs.total_spent) + '</strong> dari Plafon <strong>' + this.fmtRp(bs.total_limit) + '</strong> &bull; ' + sisaStr;
+          }
+        } else {
+          if (barEl) { barEl.style.width = '100%'; barEl.style.background = 'rgba(255, 255, 255, 0.2)'; }
+          if (pctEl) { pctEl.textContent = 'Belum Diatur'; pctEl.style.color = '#94A3B8'; }
+          if (subtextEl) {
+            subtextEl.innerHTML = 'Realisasi belanja bulan ini: <strong>' + this.fmtRp(fs.expense_total) + '</strong>. <a href="#" onclick="app.switchView(\'budgets\'); return false;" style="color:#38BDF8; font-weight:600; text-decoration:underline;">+ Atur Budget Bulanan</a>';
+          }
+        }
+
+        // 4. Metric Grid Bawah: Kekayaan Bersih, Kas Likuid, Investasi, Utang
+        var dashNwEl = document.getElementById('dashNetWorth');
+        if (dashNwEl) dashNwEl.textContent = this.fmtRp(nw.net_worth);
+        var dashCashEl = document.getElementById('dashCash');
+        if (dashCashEl) dashCashEl.textContent = this.fmtRp(nw.total_cash);
+        var dashInvValEl = document.getElementById('dashInvVal');
+        if (dashInvValEl) dashInvValEl.textContent = this.fmtRp(nw.total_investments_market);
 
         var pnlSign = nw.unrealized_pnl >= 0 ? '▲ +' : '▼ ';
         var roiText = nw.roi_pct ? ' (' + (nw.unrealized_pnl >= 0 ? '+' : '') + nw.roi_pct + '%)' : '';
-        document.getElementById('dashInvPnl').textContent = pnlSign + this.fmtRp(nw.unrealized_pnl) + roiText;
-        document.getElementById('dashInvPnl').style.color = nw.unrealized_pnl >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)';
+        var dashInvPnlEl = document.getElementById('dashInvPnl');
+        if (dashInvPnlEl) {
+          dashInvPnlEl.textContent = pnlSign + this.fmtRp(nw.unrealized_pnl) + roiText;
+          dashInvPnlEl.style.color = nw.unrealized_pnl >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)';
+        }
 
-        document.getElementById('dashAssetVal').textContent = this.fmtRp(nw.total_physical_assets);
-        document.getElementById('dashDebtVal').textContent = this.fmtRp(nw.total_debts);
+        var dashAssetValEl = document.getElementById('dashAssetVal');
+        if (dashAssetValEl) dashAssetValEl.textContent = this.fmtRp(nw.total_physical_assets);
+
+        var dashDebtEl = document.getElementById('dashDebtVal');
+        if (dashDebtEl) dashDebtEl.textContent = this.fmtRp(nw.total_debts);
 
         this.filterCategoryExpenses(this.categoryPeriod || 'this_month');
         this.renderTrendChart(data.trend_data);
@@ -9552,6 +9714,83 @@
             alert('Mode Demo: Simulasi update harga saham & ETF realtime via GoogleFinance berhasil!');
           }, 1000);
         }
+      },
+
+      openSettingsModal: function () {
+        var modal = document.getElementById('modalUnifiedSettings');
+        if (!modal) {
+          this.openGasConfigModal();
+          return;
+        }
+        var currUser = (localStorage.getItem('ruangdana_user') || 'suami').toLowerCase();
+        var isIstri = currUser === 'istri';
+        var btnSuami = document.getElementById('settingBtnUserSuami');
+        var btnIstri = document.getElementById('settingBtnUserIstri');
+        if (btnSuami && btnIstri) {
+          btnSuami.style.background = !isIstri ? 'var(--accent-blue)' : 'var(--bg-secondary)';
+          btnSuami.style.color = !isIstri ? '#FFFFFF' : 'var(--text-main)';
+          btnIstri.style.background = isIstri ? 'var(--accent-rose)' : 'var(--bg-secondary)';
+          btnIstri.style.color = isIstri ? '#FFFFFF' : 'var(--text-main)';
+        }
+
+        var isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+        var themeLbl = document.getElementById('settingThemeStatus');
+        if (themeLbl) themeLbl.textContent = isDark ? '🌙 Mode Gelap (Dark Mode)' : '☀️ Mode Terang (Light Mode)';
+
+        var isPriv = document.body.classList.contains('privacy-active');
+        var privLbl = document.getElementById('settingPrivacyStatus');
+        if (privLbl) privLbl.textContent = isPriv ? '👁️ Sensor Aktif (Nominal Disensor ***)' : '👁️‍🗨️ Sensor Nonaktif (Nominal Ditampilkan)';
+
+        var inpUrl = document.getElementById('inputSettingsGasUrl');
+        var savedUrl = (localStorage.getItem('ruangdana_gas_api_url') || window.DEFAULT_GAS_API_URL || '').trim();
+        if (inpUrl && !inpUrl.value) inpUrl.value = savedUrl;
+
+        this.openModal('modalUnifiedSettings');
+      },
+
+      setProfileFromSettings: function (role) {
+        this.selectProfile(role);
+        this.applyActiveUser(role);
+        var btnSuami = document.getElementById('settingBtnUserSuami');
+        var btnIstri = document.getElementById('settingBtnUserIstri');
+        var isIstri = role === 'istri';
+        if (btnSuami && btnIstri) {
+          btnSuami.style.background = !isIstri ? 'var(--accent-blue)' : 'var(--bg-secondary)';
+          btnSuami.style.color = !isIstri ? '#FFFFFF' : 'var(--text-main)';
+          btnIstri.style.background = isIstri ? 'var(--accent-rose)' : 'var(--bg-secondary)';
+          btnIstri.style.color = isIstri ? '#FFFFFF' : 'var(--text-main)';
+        }
+        this.showToast('Profil aktif dialihkan ke ' + (isIstri ? 'Istri 👩' : 'Suami 👨'), 'success');
+      },
+
+      toggleThemeFromSettings: function () {
+        this.toggleTheme();
+        var isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+        var themeLbl = document.getElementById('settingThemeStatus');
+        if (themeLbl) themeLbl.textContent = isDark ? '🌙 Mode Gelap (Dark Mode)' : '☀️ Mode Terang (Light Mode)';
+      },
+
+      togglePrivacyFromSettings: function () {
+        this.togglePrivacy();
+        var isPriv = document.body.classList.contains('privacy-active');
+        var privLbl = document.getElementById('settingPrivacyStatus');
+        if (privLbl) privLbl.textContent = isPriv ? '👁️ Sensor Aktif (Nominal Disensor ***)' : '👁️‍🗨️ Sensor Nonaktif (Nominal Ditampilkan)';
+      },
+
+      saveGasConfigFromSettings: function () {
+        var inp = document.getElementById('inputSettingsGasUrl');
+        var val = inp ? inp.value.trim() : '';
+        if (!val) {
+          this.showToast('Masukkan URL Web App Google Apps Script.', 'error');
+          return;
+        }
+        localStorage.setItem('ruangdana_gas_api_url', val);
+        window.DEFAULT_GAS_API_URL = val;
+        var inlineInp = document.getElementById('inputGasApiUrl');
+        if (inlineInp) inlineInp.value = val;
+        this.showToast('URL Backend berhasil disimpan!', 'success');
+        this.closeModal('modalUnifiedSettings');
+        this.refreshData();
       },
 
       togglePrivacy: function () {
