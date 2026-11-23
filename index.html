@@ -5,6 +5,9 @@
   <base target="_top">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>RuangDana - Aplikasi Finansial Keluarga</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1507,7 +1510,10 @@
           </svg>
         </div>
         <div>
-          <div class="brand-title">RuangDana</div>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div class="brand-title">RuangDana</div>
+            <span style="font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38BDF8;">v1.55.0</span>
+          </div>
           <div class="brand-subtitle">Finansial Keluarga</div>
         </div>
       </div>
@@ -1591,8 +1597,11 @@
           <button class="mobile-hamburger-btn" id="btnOpenMobileDrawer" onclick="app.openMobileDrawer()"
             title="Menu Lengkap RuangDana">☰</button>
           <div>
-            <span class="header-title-text">RuangDana</span>
-            <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Pembukuan Keuangan Terpadu</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="header-title-text">RuangDana</span>
+              <span class="app-version-badge" style="font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3);">v1.55.0</span>
+            </div>
+            <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Pembukuan Keuangan Terpadu</span>
           </div>
         </div>
         <div class="header-right" style="display: flex; align-items: center; gap: 8px;">
@@ -1669,27 +1678,40 @@
             </div>
           </div>
 
+          <!-- METRIC GRID: FOKUS KENDALI OPERASIONAL KAS & ANGGARAN HARIAN (ANTI-WEALTH ILLUSION) -->
           <div class="metric-grid">
-            <div class="card" style="border-left: 3px solid var(--accent-blue);">
-              <span class="card-title">🏛️ Kekayaan Bersih (Net Worth)</span>
-              <div class="card-val-big currency-val" id="dashNetWorth" style="color: var(--accent-blue);">Rp 0</div>
-              <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">Total seluruh aset likuid & investasi dikurangi utang</p>
-            </div>
-            <div class="card">
-              <span class="card-title">💰 Total Kas Likuid</span>
+            <!-- 1. Kas Likuid Operasional -->
+            <div class="card" style="border-left: 3px solid #38BDF8;">
+              <span class="card-title">💰 Kas Likuid Operasional</span>
               <div class="card-val-big currency-val" id="dashCash" style="color: #BAE6FD;">Rp 0</div>
-              <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">Saldo seluruh dompet & rekening bank</p>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">Uang riil di dompet & rekening bank siap pakai</p>
             </div>
-            <div class="card">
-              <span class="card-title">📈 Portofolio Investasi</span>
-              <div class="card-val-big currency-val" id="dashInvVal">Rp 0</div>
-              <p style="font-size: 0.82rem; font-weight: 700; margin-top: 6px;" class="currency-val" id="dashInvPnl">
-                Unrealized P&L: Rp 0</p>
+            <!-- 2. Sisa Plafon Anggaran Belanja Bulan Ini -->
+            <div class="card" style="border-left: 3px solid #10B981;">
+              <span class="card-title">🎯 Sisa Kuota Belanja Bulan Ini</span>
+              <div class="card-val-big currency-val" id="dashBudgetRemainingCard" style="color: #6EE7B7;">Rp 0</div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">Plafon aman belanja yang masih boleh digunakan</p>
             </div>
-            <div class="card">
+            <!-- 3. Sisa Pokok Utang Keluarga -->
+            <div class="card" style="border-left: 3px solid #F43F5E;">
               <span class="card-title">💳 Sisa Pokok Utang</span>
               <div class="card-val-big currency-val" id="dashDebtVal" style="color: var(--accent-rose);">Rp 0</div>
-              <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">KPR & Pinjaman aktif</p>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">Kewajiban aktif yang harus dilunasi</p>
+            </div>
+            <!-- 4. Akses Laporan Total Aset & Kekayaan (SPT & LHKPN) -->
+            <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; border: 1px dashed var(--accent-blue); background: rgba(56, 189, 248, 0.04);" onclick="app.switchView('asset-snapshot')">
+              <div>
+                <span class="card-title" style="color: var(--accent-blue);">🏛️ Kekayaan Bersih (Net Worth) & Laporan Harta</span>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">Lihat akumulasi aset jangka panjang, investasi & SPT/LHKPN di menu terdedikasi.</p>
+              </div>
+              <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-blue);">Buka Laporan Harta &rarr;</span>
+                <!-- Hidden DOM hooks to preserve script & regression test compatibility -->
+                <span id="dashNetWorth" style="display: none;">Rp 0</span>
+                <span id="dashInvVal" style="display: none;">Rp 0</span>
+                <span id="dashInvPnl" style="display: none;">Rp 0</span>
+                <span id="dashAssetVal" style="display: none;">Rp 0</span>
+              </div>
             </div>
           </div>
 
@@ -3848,7 +3870,8 @@
         <div id="settingsGasTestStatus" style="font-size: 0.78rem; margin-top: 8px; padding: 6px 10px; border-radius: 6px; display: none;"></div>
       </div>
 
-      <div style="display: flex; justify-content: flex-end;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 14px; flex-wrap: wrap; gap: 8px;">
+        <span style="font-size: 0.72rem; color: var(--text-muted);">RuangDana &bull; Versi Sistem: <strong style="color: var(--accent-blue);">v1.55.0</strong></span>
         <button type="button" class="btn-sm-action" onclick="app.closeModal('modalUnifiedSettings')">Tutup</button>
       </div>
     </div>
@@ -5226,11 +5249,21 @@
             var sisaStr = bs.remaining > 0 ? ('Sisa Plafon Aman: <strong>' + this.fmtRp(bs.remaining) + '</strong>') : '<strong style="color:#FDA4AF;">Overbudget melampaui plafon</strong>';
             subtextEl.innerHTML = 'Realisasi <strong>' + this.fmtRp(bs.total_spent) + '</strong> dari Plafon <strong>' + this.fmtRp(bs.total_limit) + '</strong> &bull; ' + sisaStr;
           }
+          var remCard = document.getElementById('dashBudgetRemainingCard');
+          if (remCard) {
+            remCard.textContent = this.fmtRp(bs.remaining);
+            remCard.style.color = bs.remaining > 0 ? '#6EE7B7' : '#FDA4AF';
+          }
         } else {
           if (barEl) { barEl.style.width = '100%'; barEl.style.background = 'rgba(255, 255, 255, 0.2)'; }
           if (pctEl) { pctEl.textContent = 'Belum Diatur'; pctEl.style.color = '#94A3B8'; }
           if (subtextEl) {
             subtextEl.innerHTML = 'Realisasi belanja bulan ini: <strong>' + this.fmtRp(fs.expense_total) + '</strong>. <a href="#" onclick="app.switchView(\'budgets\'); return false;" style="color:#38BDF8; font-weight:600; text-decoration:underline;">+ Atur Budget Bulanan</a>';
+          }
+          var remCardNo = document.getElementById('dashBudgetRemainingCard');
+          if (remCardNo) {
+            remCardNo.textContent = 'Belum Diatur';
+            remCardNo.style.color = '#94A3B8';
           }
         }
 
