@@ -1521,7 +1521,7 @@
         <div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <div class="brand-title">RuangDana</div>
-            <span style="font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38BDF8;">v1.57.0</span>
+            <span style="font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38BDF8;">v1.58.0</span>
           </div>
           <div class="brand-subtitle">Finansial Keluarga</div>
         </div>
@@ -1608,7 +1608,7 @@
           <div>
             <div style="display: flex; align-items: center; gap: 6px;">
               <span class="header-title-text">RuangDana</span>
-              <span class="app-version-badge" style="font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3);">v1.57.0</span>
+              <span class="app-version-badge" style="font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3);">v1.58.0</span>
             </div>
             <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Pembukuan Keuangan Terpadu</span>
           </div>
@@ -2035,27 +2035,73 @@
 
         <!-- 4. BUDGET ANGGARAN (BULANAN & TAHUNAN) -->
         <section class="view-section" id="view-budgets">
-          <!-- Tab Navigation Switcher -->
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <!-- Tab Navigation Switcher (4 Sub-Tabs) -->
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
             <button class="switch-pill active" id="tabBtnBudgetMonthly" onclick="app.switchBudgetTab('monthly')">📅 Budget Bulanan</button>
             <button class="switch-pill" id="tabBtnBudgetAnnual" onclick="app.switchBudgetTab('annual')">📆 Budget Tahunan</button>
+            <button class="switch-pill" id="tabBtnBudgetSinking" onclick="app.switchBudgetTab('sinking')">🎯 Sinking Fund</button>
+            <button class="switch-pill" id="tabBtnBudgetEvaluation" onclick="app.switchBudgetTab('evaluation')">📊 Evaluasi & Rapor</button>
           </div>
 
           <!-- TAB 1: BUDGET BULANAN -->
           <div id="tabBudgetMonthlyContent">
             <div
               style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <h2 style="font-weight: 800; font-size: 1.4rem;">Budget Bulanan</h2>
+              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <h2 style="font-weight: 800; font-size: 1.4rem; margin: 0;">Budget Bulanan</h2>
                 <input type="month" id="bPeriodFilter" class="form-input"
                   style="width: auto; padding: 6px 12px; font-size: 0.82rem;" onchange="app.loadBudgets()">
               </div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn-secondary-action" onclick="app.openSmartBudgetModal()"
+                  title="Generate rekomendasi budget otomatis berbasis riwayat pengeluaran">🧠 Smart Budget</button>
                 <button class="btn-secondary-action" onclick="app.copyPreviousMonthBudget()"
-                  title="Salin seluruh alokasi budget dari 1 bulan sebelumnya ke bulan ini">📋 Salin Budget Bulan Lalu</button>
+                  title="Salin seluruh alokasi budget dari 1 bulan sebelumnya ke bulan ini">📋 Salin Bulan Lalu</button>
+                <button class="btn-secondary-action" onclick="app.openBudgetHistoryModal()"
+                  title="Lihat riwayat perubahan & revisi batas anggaran">📜 Riwayat Revisi</button>
                 <button class="btn-accent-blue" onclick="app.openBudgetModal()">+ Atur Budget Bulanan</button>
               </div>
             </div>
+
+            <!-- HERO WIDGET: SAFE TO SPEND, PACING, FORECASTING & BUDGET VS INCOME -->
+            <div class="card" id="budgetHeroAnalysisCard" style="margin-bottom: 20px; padding: 18px; border-left: 4px solid #10B981; background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), transparent);">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px;">
+                <!-- 1. Safe to Spend -->
+                <div>
+                  <span style="font-size: 0.72rem; font-weight: 700; color: #10B981; text-transform: uppercase; display: flex; align-items: center; gap: 5px;">
+                    🛡️ Batas Aman Belanja (Safe to Spend)
+                  </span>
+                  <div style="font-size: 1.6rem; font-weight: 900; color: #6EE7B7; margin-top: 4px;" id="valSafeToSpendDaily">Rp 0</div>
+                  <p style="font-size: 0.76rem; color: var(--text-muted); margin-top: 2px;" id="subSafeToSpend">Minggu ini: Rp 0 &bull; Menghitung...</p>
+                </div>
+                <!-- 2. Budget Pacing -->
+                <div>
+                  <span style="font-size: 0.72rem; font-weight: 700; color: #38BDF8; text-transform: uppercase; display: flex; align-items: center; gap: 5px;">
+                    ⏱️ Kecepatan Belanja (Budget Pacing)
+                  </span>
+                  <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-top: 6px;" id="valBudgetPacingStatus">Memuat pacing...</div>
+                  <p style="font-size: 0.76rem; color: var(--text-muted); margin-top: 2px;" id="subBudgetPacing">Hari ke-0 &bull; Realisasi 0%</p>
+                </div>
+                <!-- 3. Forecasting Akhir Bulan (EOM) -->
+                <div>
+                  <span style="font-size: 0.72rem; font-weight: 700; color: #F59E0B; text-transform: uppercase; display: flex; align-items: center; gap: 5px;">
+                    🔮 Proyeksi Akhir Bulan (EOM Forecast)
+                  </span>
+                  <div style="font-size: 1.3rem; font-weight: 900; color: var(--text-main); margin-top: 4px;" id="valForecastEOM">Rp 0</div>
+                  <p style="font-size: 0.76rem; color: var(--text-muted); margin-top: 2px;" id="subForecastVariance">Diproyeksikan Hemat: Rp 0</p>
+                </div>
+                <!-- 4. Budget vs Income Ratio -->
+                <div>
+                  <span style="font-size: 0.72rem; font-weight: 700; color: #A855F7; text-transform: uppercase; display: flex; align-items: center; gap: 5px;">
+                    ⚖️ Anggaran vs Pemasukan
+                  </span>
+                  <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin-top: 6px;" id="valBudgetVsIncomeStatus">Perencanaan Seimbang</div>
+                  <p style="font-size: 0.76rem; color: var(--text-muted); margin-top: 2px;" id="subBudgetVsIncomeRatio">Belanja: 0% &bull; Sinking: 0%</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- List Kategori Budget Bulanan -->
             <div style="display: flex; flex-direction: column; gap: 14px;" id="budgetsList"></div>
           </div>
 
@@ -2063,8 +2109,8 @@
           <div id="tabBudgetAnnualContent" style="display: none;">
             <div
               style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <h2 style="font-weight: 800; font-size: 1.4rem;">Budget Tahunan</h2>
+              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <h2 style="font-weight: 800; font-size: 1.4rem; margin: 0;">Budget Tahunan</h2>
                 <select id="bAnnualYearFilter" class="form-select"
                   style="width: auto; padding: 6px 12px; font-size: 0.82rem;" onchange="app.loadAnnualBudgets()">
                   <option value="2024">Tahun 2024</option>
@@ -2108,6 +2154,56 @@
 
             <!-- List Kategori Budget Tahunan -->
             <div style="display: flex; flex-direction: column; gap: 14px;" id="annualBudgetsList"></div>
+          </div>
+
+          <!-- TAB 3: SINKING FUND (POS DANA CADANGAN PENGELUARAN TAHUNAN / BERKALA) -->
+          <div id="tabBudgetSinkingContent" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <h2 style="font-weight: 800; font-size: 1.4rem; margin: 0;">🎯 Sinking Fund (Dana Cadangan Berkala)</h2>
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
+                  Persiapan dana pengeluaran tahunan terencana (Pajak STNK, PBB, Asuransi, Qurban, Liburan, Sekolah). Setoran bulanan bukan pengeluaran aktual.
+                </p>
+              </div>
+              <button class="btn-accent-blue" onclick="app.openSinkingFundModal()">+ Tambah Pos Sinking Fund</button>
+            </div>
+
+            <!-- Hero Card Ringkasan Sinking Fund -->
+            <div class="card" style="margin-bottom: 20px; padding: 18px; border-left: 4px solid #38BDF8; background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), transparent);" id="sinkingHeroCard">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+                <div>
+                  <span style="font-size: 0.72rem; font-weight: 700; color: #38BDF8; text-transform: uppercase;">Total Target Seluruh Pos</span>
+                  <div style="font-size: 1.5rem; font-weight: 900; color: var(--text-main); margin-top: 4px;" id="sinkingHeroTotalTarget">Rp 0</div>
+                </div>
+                <div>
+                  <span style="font-size: 0.72rem; font-weight: 700; color: #10B981; text-transform: uppercase;">Total Dana Terkumpul</span>
+                  <div style="font-size: 1.5rem; font-weight: 900; color: #6EE7B7; margin-top: 4px;" id="sinkingHeroTotalCollected">Rp 0</div>
+                </div>
+                <div>
+                  <span style="font-size: 0.72rem; font-weight: 700; color: #F59E0B; text-transform: uppercase;">Kebutuhan Setoran Bulan Ini</span>
+                  <div style="font-size: 1.5rem; font-weight: 900; color: #FCD34D; margin-top: 4px;" id="sinkingHeroMonthlyNeeded">Rp 0/bln</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- List Kartu Sinking Fund -->
+            <div style="display: flex; flex-direction: column; gap: 14px;" id="sinkingFundsList"></div>
+          </div>
+
+          <!-- TAB 4: EVALUASI & RAPOR ANGGARAN -->
+          <div id="tabBudgetEvaluationContent" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <h2 style="font-weight: 800; font-size: 1.4rem; margin: 0;">📊 Evaluasi & Rapor Anggaran</h2>
+                <input type="month" id="bEvalPeriodFilter" class="form-input"
+                  style="width: auto; padding: 6px 12px; font-size: 0.82rem;" onchange="app.loadBudgetEvaluation()">
+              </div>
+              <button class="btn-secondary-action" onclick="app.loadBudgetEvaluation(true)">🔄 Segarkan Evaluasi</button>
+            </div>
+
+            <div id="budgetEvaluationContainer">
+              <span style="color: var(--text-muted); font-size: 0.85rem;">Memuat evaluasi anggaran...</span>
+            </div>
           </div>
         </section>
 
@@ -3167,6 +3263,135 @@
   </div>
 
   <!-- ========================================================================
+       MODAL 5C: SMART BUDGET RECOMMENDATIONS (AI & HEURISTIK TRANSAKSI HISTORIS)
+       ======================================================================== -->
+  <div class="modal-overlay" id="modalSmartBudget">
+    <div class="modal-content" style="max-width: 680px; max-height: 85vh; display: flex; flex-direction: column;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div>
+          <h3 style="font-weight: 800; font-size: 1.25rem; margin: 0;">🧠 Rekomendasi Smart Budget</h3>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+            Hitung rekomendasi batas anggaran otomatis berdasarkan data transaksi riil.
+          </p>
+        </div>
+        <button type="button" class="drawer-close-btn" onclick="app.closeModal('modalSmartBudget')">&times;</button>
+      </div>
+
+      <!-- Controls Mode & Persentase -->
+      <div style="background: var(--bg-primary); padding: 12px 14px; border-radius: 12px; margin-bottom: 14px; border: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <label style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Metode:</label>
+          <select id="sbModeSel" class="form-select" style="width: auto; padding: 5px 10px; font-size: 0.8rem;" onchange="app.generateSmartBudget()">
+            <option value="mean12" selected>Rata-rata 12 Bulan (Stabil)</option>
+            <option value="median">Median Bulanan (Kebal Anomali)</option>
+            <option value="mean3">Rata-rata 3 Bulan Terakhir (Peka Inflasi)</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 4px; align-items: center;">
+          <label style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Penyesuaian:</label>
+          <button type="button" class="switch-pill" onclick="app.setSmartBudgetAdj(-10)">-10%</button>
+          <button type="button" class="switch-pill" onclick="app.setSmartBudgetAdj(-5)">-5%</button>
+          <button type="button" class="switch-pill active" id="sbAdjZero" onclick="app.setSmartBudgetAdj(0)">0%</button>
+          <button type="button" class="switch-pill" onclick="app.setSmartBudgetAdj(5)">+5%</button>
+          <button type="button" class="switch-pill" onclick="app.setSmartBudgetAdj(10)">+10%</button>
+          <button type="button" class="switch-pill" onclick="app.setSmartBudgetAdj(20)">+20%</button>
+        </div>
+      </div>
+
+      <!-- Container Tabel Rekomendasi -->
+      <div style="flex: 1; overflow-y: auto; padding-right: 4px; margin-bottom: 14px;" id="sbRecListContainer">
+        <span style="color: var(--text-muted); font-size: 0.85rem;">Menghitung rekomendasi...</span>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px;">
+        <span style="font-size: 0.78rem; color: var(--text-muted);" id="sbTotalRecommendedSummary">Total Plafon: Rp 0</span>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn-sm-action" onclick="app.closeModal('modalSmartBudget')">Batal</button>
+          <button type="button" class="btn-accent-blue" id="btnApplySmartBudget" onclick="app.applySmartBudget()">💾 Terapkan & Simpan Semua</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 5D: FORMULIR TAMBAH / EDIT SINKING FUND
+       ======================================================================== -->
+  <div class="modal-overlay" id="modalSinkingFund">
+    <div class="modal-content" style="max-width: 520px;">
+      <h3 style="margin-bottom: 14px; font-weight: 800;" id="sinkingModalTitle">Tambah Pos Sinking Fund</h3>
+      <form onsubmit="app.saveSinkingFund(event)">
+        <input type="hidden" id="sfId">
+        <div class="form-group">
+          <label class="form-label">Nama Pos Pengeluaran Berkala</label>
+          <input type="text" class="form-input" id="sfName" placeholder="Contoh: Pajak Mobil Pajero, Kurban Idul Adha, Liburan Akhir Tahun" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target Nominal Dana (Rp)</label>
+          <input type="number" class="form-input" id="sfTarget" placeholder="Contoh: 6000000" min="10000" required oninput="app.calcSinkingDepositPreview()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tanggal Penggunaan / Jatuh Tempo</label>
+          <input type="date" class="form-input" id="sfTargetDate" required onchange="app.calcSinkingDepositPreview()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dana Terkumpul Saat Ini (Rp)</label>
+          <input type="number" class="form-input" id="sfCollected" placeholder="0" min="0" value="0" oninput="app.calcSinkingDepositPreview()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kategori Belanja Terkait</label>
+          <select class="form-select" id="sfCat"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dompet / Rekening Penyimpanan (Opsional)</label>
+          <select class="form-select" id="sfWallet"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Catatan Tambahan</label>
+          <input type="text" class="form-input" id="sfNotes" placeholder="Misal: Simpan di tabungan khusus atau reksa dana pasar uang">
+        </div>
+
+        <div style="background: var(--bg-primary); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 14px;">
+          <div style="font-size: 0.76rem; color: var(--text-muted);">Estimasi Kebutuhan Setoran Bulanan:</div>
+          <div style="font-size: 1.25rem; font-weight: 800; color: #38BDF8; margin-top: 2px;" id="sfMonthlyPreview">Rp 0 / bulan</div>
+          <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">
+            💡 Setoran sinking fund adalah alokasi cadangan kas likuid keluarga (bukan pengeluaran aktual sampai transaksi riil terjadi).
+          </p>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+          <button type="button" class="btn-sm-action" onclick="app.closeModal('modalSinkingFund')">Batal</button>
+          <button type="submit" class="btn-accent-blue" id="btnSubmitSinkingFund">Simpan Sinking Fund</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 5E: RIWAYAT PERUBAHAN & REVISI ANGGARAN (LOG AUDIT)
+       ======================================================================== -->
+  <div class="modal-overlay" id="modalBudgetHistory">
+    <div class="modal-content" style="max-width: 640px; max-height: 80vh; display: flex; flex-direction: column;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+        <div>
+          <h3 style="font-weight: 800; font-size: 1.25rem; margin: 0;">📜 Riwayat Perubahan Anggaran</h3>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+            Rekam jejak setiap kali plafon anggaran dibuat, diedit, atau dihapus.
+          </p>
+        </div>
+        <button type="button" class="drawer-close-btn" onclick="app.closeModal('modalBudgetHistory')">&times;</button>
+      </div>
+
+      <div style="flex: 1; overflow-y: auto; padding-right: 4px;" id="budgetHistoryListContainer">
+        <span style="color: var(--text-muted); font-size: 0.85rem;">Memuat riwayat perubahan...</span>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+        <button type="button" class="btn-sm-action" onclick="app.closeModal('modalBudgetHistory')">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
        MODAL 6: TAMBAH / EDIT INVESTASI (SIMPEL: MODAL & NILAI SAAT INI)
        ======================================================================== -->
   <div class="modal-overlay" id="modalInvestment">
@@ -3973,7 +4198,7 @@
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 14px; flex-wrap: wrap; gap: 8px;">
-        <span style="font-size: 0.72rem; color: var(--text-muted);">RuangDana &bull; Versi Sistem: <strong style="color: var(--accent-blue);">v1.57.0</strong></span>
+        <span style="font-size: 0.72rem; color: var(--text-muted);">RuangDana &bull; Versi Sistem: <strong style="color: var(--accent-blue);">v1.58.0</strong></span>
         <button type="button" class="btn-sm-action" onclick="app.closeModal('modalUnifiedSettings')">Tutup</button>
       </div>
     </div>
@@ -8245,7 +8470,7 @@
         }
       },
 
-      // BUDGET BULANAN (CRUD TERHUBUNG SHEET ANGGARAN)
+      // BUDGET BULANAN (CRUD TERHUBUNG SHEET ANGGARAN & FITUR CERDAS)
       renderBudgetsList: function (res, p) {
         var self = this;
         var c = document.getElementById('budgetsList');
@@ -8253,7 +8478,7 @@
         c.innerHTML = '';
         var budgets = res.budgets || [];
         if (budgets.length === 0) {
-          c.innerHTML = '<span style="color:var(--text-muted)">Belum ada batas budget untuk periode ' + (res.period || p) + '. Klik "+ Atur Budget" untuk menambahkan batas pengeluaran.</span>';
+          c.innerHTML = '<span style="color:var(--text-muted)">Belum ada batas budget untuk periode ' + (res.period || p) + '. Klik "+ Atur Budget" atau klik "🧠 Smart Budget" untuk rekomendasi otomatis.</span>';
           return;
         }
 
@@ -8274,13 +8499,29 @@
             statusBadge = '<span style="font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; background: rgba(16,185,129,0.15); color: #10B981; font-weight: 600;">✅ Aman</span>';
           }
 
+          // Budget Pacing Badge
+          var pacingInfo = '';
+          if (self.cache.budgetAnalysis && self.cache.budgetAnalysis[p] && self.cache.budgetAnalysis[p].category_pacing) {
+            var cp = self.cache.budgetAnalysis[p].category_pacing.find(function (it) { return it.category_id == b.category_id; });
+            if (cp) {
+              if (cp.pacing_status === 'overbudget') {
+                pacingInfo = '<span style="font-size:0.68rem; padding:2px 6px; border-radius:4px; background:rgba(244,63,94,0.18); color:#F43F5E; font-weight:700;">🚨 Overbudget</span>';
+              } else if (cp.pacing_status === 'fast_burn') {
+                pacingInfo = '<span style="font-size:0.68rem; padding:2px 6px; border-radius:4px; background:rgba(245,158,11,0.18); color:#F59E0B; font-weight:600;">⚠️ Waspada (' + (cp.delta_pct > 0 ? '+' : '') + cp.delta_pct + '% vs waktu)</span>';
+              } else {
+                pacingInfo = '<span style="font-size:0.68rem; padding:2px 6px; border-radius:4px; background:rgba(16,185,129,0.15); color:#10B981; font-weight:600;">⏱️ Pacing Aman</span>';
+              }
+            }
+          }
+
           var div = document.createElement('div');
           div.className = 'card';
           div.style.padding = '16px 22px';
           div.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">' +
-            '  <div style="display:flex; align-items:center; gap:8px;">' +
-            '    <strong>' + b.category_name + '</strong>' +
+            '  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">' +
+            '    <strong style="font-size:0.95rem;">' + b.category_name + '</strong>' +
             '    ' + statusBadge +
+            '    ' + pacingInfo +
             '  </div>' +
             '  <span class="currency-val" style="font-weight:700; color:' + barCol + '">' + pct + '%</span>' +
             '</div>' +
@@ -8302,6 +8543,8 @@
       loadBudgets: function (forceRefresh) {
         var self = this;
         var p = document.getElementById('bPeriodFilter') ? document.getElementById('bPeriodFilter').value : new Date().toISOString().slice(0, 7);
+
+        self.loadBudgetAnalysis(p);
 
         // In-memory instant render (0 detik): render seketika jika cache anggaran bulan ini sudah ada
         if (self.cache.budgets && self.cache.budgets[p] && !forceRefresh) {
@@ -8404,21 +8647,32 @@
         this.activeBudgetTab = tab;
         var btnM = document.getElementById('tabBtnBudgetMonthly');
         var btnA = document.getElementById('tabBtnBudgetAnnual');
+        var btnS = document.getElementById('tabBtnBudgetSinking');
+        var btnE = document.getElementById('tabBtnBudgetEvaluation');
+
         var secM = document.getElementById('tabBudgetMonthlyContent');
         var secA = document.getElementById('tabBudgetAnnualContent');
+        var secS = document.getElementById('tabBudgetSinkingContent');
+        var secE = document.getElementById('tabBudgetEvaluationContent');
 
-        if (tab === 'annual') {
-          if (btnM) btnM.classList.remove('active');
-          if (btnA) btnA.classList.add('active');
-          if (secM) secM.style.display = 'none';
-          if (secA) secA.style.display = 'block';
-          this.loadAnnualBudgets();
-        } else {
-          if (btnM) btnM.classList.add('active');
-          if (btnA) btnA.classList.remove('active');
-          if (secM) secM.style.display = 'block';
-          if (secA) secA.style.display = 'none';
+        if (btnM) btnM.classList.toggle('active', tab === 'monthly');
+        if (btnA) btnA.classList.toggle('active', tab === 'annual');
+        if (btnS) btnS.classList.toggle('active', tab === 'sinking');
+        if (btnE) btnE.classList.toggle('active', tab === 'evaluation');
+
+        if (secM) secM.style.display = (tab === 'monthly' ? 'block' : 'none');
+        if (secA) secA.style.display = (tab === 'annual' ? 'block' : 'none');
+        if (secS) secS.style.display = (tab === 'sinking' ? 'block' : 'none');
+        if (secE) secE.style.display = (tab === 'evaluation' ? 'block' : 'none');
+
+        if (tab === 'monthly') {
           this.loadBudgets();
+        } else if (tab === 'annual') {
+          this.loadAnnualBudgets();
+        } else if (tab === 'sinking') {
+          this.loadSinkingFunds();
+        } else if (tab === 'evaluation') {
+          this.loadBudgetEvaluation();
         }
       },
 
@@ -8656,6 +8910,501 @@
             })
             .apiSaveAnnualBudget(payload, 'User');
         }
+      },
+
+      // ========================================================================
+      // 9 FITUR ANGGARAN LANJUTAN: PACING, SAFE TO SPEND, SINKING & EVALUASI
+      // ========================================================================
+
+      loadBudgetAnalysis: function (period) {
+        var self = this;
+        var p = period || (document.getElementById('bPeriodFilter') ? document.getElementById('bPeriodFilter').value : new Date().toISOString().slice(0, 7));
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              if (!res || res.status !== 'success') return;
+              self.cache.budgetAnalysis = self.cache.budgetAnalysis || {};
+              self.cache.budgetAnalysis[p] = res;
+              self.renderBudgetAnalysis(res);
+            })
+            .apiGetBudgetAnalysis(p);
+        }
+      },
+
+      renderBudgetAnalysis: function (res) {
+        var self = this;
+        if (!res) return;
+
+        // 1. Safe to Spend
+        var sts = res.safe_to_spend || {};
+        var elDaily = document.getElementById('valSafeToSpendDaily');
+        var elSubSts = document.getElementById('subSafeToSpend');
+        if (elDaily) elDaily.textContent = self.fmtRp(sts.daily || 0) + ' / hari';
+        if (elSubSts) elSubSts.innerHTML = 'Minggu ini: <strong>' + self.fmtRp(sts.weekly || 0) + '</strong> &bull; Sisa ' + (res.days_remaining || 0) + ' hari';
+
+        // 2. Budget Pacing
+        var elPacing = document.getElementById('valBudgetPacingStatus');
+        var elSubPacing = document.getElementById('subBudgetPacing');
+        var timePct = res.time_elapsed_pct || 0;
+        var totalSpent = (res.forecasting && res.forecasting.current_spent) || 0;
+        var totalLimit = (res.forecasting && res.forecasting.total_budget_limit) || 1;
+        var spentPct = Math.round((totalSpent / totalLimit) * 100);
+
+        if (elPacing) {
+          if (spentPct > 100) {
+            elPacing.innerHTML = '<span style="color:#F43F5E;">🚨 Overbudget (' + spentPct + '%)</span>';
+          } else if (spentPct > timePct + 12) {
+            elPacing.innerHTML = '<span style="color:#F59E0B;">⚠️ Cepat Habis (' + spentPct + '%)</span>';
+          } else {
+            elPacing.innerHTML = '<span style="color:#10B981;">🟢 Aman Sesuai Rencana (' + spentPct + '%)</span>';
+          }
+        }
+        if (elSubPacing) elSubPacing.textContent = 'Hari ke-' + res.current_day + ' (' + timePct + '% waktu berjalan)';
+
+        // 3. Forecasting Akhir Bulan
+        var fc = res.forecasting || {};
+        var elFc = document.getElementById('valForecastEOM');
+        var elSubFc = document.getElementById('subForecastVariance');
+        if (elFc) elFc.textContent = self.fmtRp(fc.eom_forecast_spent || 0);
+        if (elSubFc) {
+          if (fc.eom_variance >= 0) {
+            elSubFc.innerHTML = '<span style="color:#10B981;">Diproyeksikan Hemat: +' + self.fmtRp(fc.eom_variance) + '</span>';
+          } else {
+            elSubFc.innerHTML = '<span style="color:#F43F5E;">Diproyeksikan Jebol: -' + self.fmtRp(Math.abs(fc.eom_variance)) + '</span>';
+          }
+        }
+
+        // 4. Budget vs Income
+        var bvi = res.budget_vs_income || {};
+        var elBvi = document.getElementById('valBudgetVsIncomeStatus');
+        var elSubBvi = document.getElementById('subBudgetVsIncomeRatio');
+        if (elBvi) {
+          if (bvi.is_deficit) {
+            elBvi.innerHTML = '<span style="color:#F43F5E;">🚨 Rencana Defisit</span>';
+          } else {
+            elBvi.innerHTML = '<span style="color:#10B981;">✅ Perencanaan Seimbang</span>';
+          }
+        }
+        if (elSubBvi) elSubBvi.textContent = 'Belanja: ' + (bvi.needs_pct || 0) + '% • Sinking: ' + (bvi.savings_pct || 0) + '% dari Pemasukan';
+      },
+
+      // SMART BUDGET ENGINE
+      smartBudgetAdj: 0,
+      smartBudgetRecs: [],
+
+      openSmartBudgetModal: function () {
+        this.smartBudgetAdj = 0;
+        var p = document.getElementById('bPeriodFilter') ? document.getElementById('bPeriodFilter').value : new Date().toISOString().slice(0, 7);
+        this.openModal('modalSmartBudget');
+        this.generateSmartBudget(p);
+      },
+
+      setSmartBudgetAdj: function (pct) {
+        this.smartBudgetAdj = Number(pct) || 0;
+        this.generateSmartBudget();
+      },
+
+      generateSmartBudget: function (period) {
+        var self = this;
+        var p = period || (document.getElementById('bPeriodFilter') ? document.getElementById('bPeriodFilter').value : new Date().toISOString().slice(0, 7));
+        var modeSel = document.getElementById('sbModeSel');
+        var mode = modeSel ? modeSel.value : 'mean12';
+        var container = document.getElementById('sbRecListContainer');
+        if (container) container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:30px;">⏳ Menganalisis riwayat transaksi...</div>';
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              if (!res || res.status !== 'success') {
+                if (container) container.innerHTML = '<span style="color:var(--accent-rose)">Gagal menganalisis data riwayat.</span>';
+                return;
+              }
+              self.smartBudgetRecs = res.recommendations || [];
+              self.renderSmartBudgetList(self.smartBudgetRecs);
+            })
+            .withFailureHandler(function (err) {
+              if (container) container.innerHTML = '<span style="color:var(--accent-rose)">Error: ' + (err.message || err) + '</span>';
+            })
+            .apiGetSmartBudgetRecommendations(p, mode, self.smartBudgetAdj);
+        }
+      },
+
+      renderSmartBudgetList: function (recs) {
+        var self = this;
+        var container = document.getElementById('sbRecListContainer');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (!recs || recs.length === 0) {
+          container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">Belum ada kategori pengeluaran aktif.</div>';
+          return;
+        }
+
+        var totalRec = 0;
+        var html = '<div style="display:flex; flex-direction:column; gap:10px;">';
+        recs.forEach(function (r, idx) {
+          totalRec += Number(r.recommended_limit) || 0;
+          html += '<div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card); padding:10px 14px; border-radius:10px; border:1px solid var(--border-color); flex-wrap:wrap; gap:8px;">' +
+            '  <div style="display:flex; align-items:center; gap:8px;">' +
+            '    <span style="font-size:1.2rem;">' + (r.icon || '🏷️') + '</span>' +
+            '    <div>' +
+            '      <strong style="font-size:0.88rem;">' + r.category_name + '</strong>' +
+            '      <div style="font-size:0.72rem; color:var(--text-muted);">Riwayat: ' + self.fmtRp(r.historical_base) + (r.current_limit > 0 ? (' &bull; Saat ini: ' + self.fmtRp(r.current_limit)) : '') + '</div>' +
+            '    </div>' +
+            '  </div>' +
+            '  <div style="display:flex; align-items:center; gap:8px;">' +
+            '    <span style="font-size:0.75rem; color:var(--text-muted);">Plafon Rekomendasi:</span>' +
+            '    <input type="number" class="form-input sb-rec-input" data-cat-id="' + r.category_id + '" value="' + r.recommended_limit + '" style="width:130px; padding:5px 8px; font-size:0.82rem; text-align:right;" oninput="app.updateSmartBudgetTotal()">' +
+            '  </div>' +
+            '</div>';
+        });
+        html += '</div>';
+        container.innerHTML = html;
+
+        var elSum = document.getElementById('sbTotalRecommendedSummary');
+        if (elSum) elSum.innerHTML = 'Total Usulan Plafon: <strong style="color:var(--accent-blue); font-size:0.95rem;">' + self.fmtRp(totalRec) + '</strong>';
+      },
+
+      updateSmartBudgetTotal: function () {
+        var self = this;
+        var total = 0;
+        document.querySelectorAll('.sb-rec-input').forEach(function (inp) {
+          total += Number(inp.value) || 0;
+        });
+        var elSum = document.getElementById('sbTotalRecommendedSummary');
+        if (elSum) elSum.innerHTML = 'Total Usulan Plafon: <strong style="color:var(--accent-blue); font-size:0.95rem;">' + self.fmtRp(total) + '</strong>';
+      },
+
+      applySmartBudget: function () {
+        var self = this;
+        var btn = document.getElementById('btnApplySmartBudget');
+        var p = document.getElementById('bPeriodFilter') ? document.getElementById('bPeriodFilter').value : new Date().toISOString().slice(0, 7);
+        var inputs = document.querySelectorAll('.sb-rec-input');
+        if (inputs.length === 0) return;
+
+        if (!confirm('Terapkan dan simpan ' + inputs.length + ' pos anggaran ke periode ' + p + '?')) return;
+        if (!this.lockSubmit(btn)) return;
+
+        var count = 0;
+        var totalToSave = inputs.length;
+        var hasError = false;
+
+        inputs.forEach(function (inp) {
+          var catId = inp.getAttribute('data-cat-id');
+          var lim = Number(inp.value) || 0;
+          if (lim > 0 && typeof google !== 'undefined' && google.script && google.script.run) {
+            google.script.run
+              .withSuccessHandler(function () {
+                count++;
+                if (count >= totalToSave) {
+                  self.unlockSubmit(btn);
+                  alert('Berhasil menyimpan seluruh rekomendasi anggaran!');
+                  self.closeModal('modalSmartBudget');
+                  self.loadBudgets(true);
+                }
+              })
+              .withFailureHandler(function () {
+                hasError = true;
+                count++;
+                if (count >= totalToSave) {
+                  self.unlockSubmit(btn);
+                  alert('Selesai dengan beberapa catatan.');
+                  self.closeModal('modalSmartBudget');
+                  self.loadBudgets(true);
+                }
+              })
+              .apiSaveBudget({ period: p, category_id: catId, limit: lim, reason: 'Rekomendasi Smart Budget' }, 'User');
+          } else {
+            count++;
+          }
+        });
+      },
+
+      // SINKING FUND MODULE
+      loadSinkingFunds: function (forceRefresh) {
+        var self = this;
+        var c = document.getElementById('sinkingFundsList');
+        if (c) c.innerHTML = '<span style="color:var(--text-muted)">Memuat data sinking fund...</span>';
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              var items = (res && res.sinking_funds) || [];
+              self.renderSinkingFunds(items);
+            })
+            .withFailureHandler(function (err) {
+              if (c) c.innerHTML = '<span style="color:var(--accent-rose)">Gagal memuat: ' + (err.message || err) + '</span>';
+            })
+            .apiGetSinkingFunds();
+        }
+      },
+
+      renderSinkingFunds: function (items) {
+        var self = this;
+        var c = document.getElementById('sinkingFundsList');
+        if (!c) return;
+        c.innerHTML = '';
+
+        var totalTarget = 0;
+        var totalCollected = 0;
+        var totalMonthly = 0;
+
+        if (items.length === 0) {
+          c.innerHTML = '<span style="color:var(--text-muted)">Belum ada pos Sinking Fund. Klik "+ Tambah Pos Sinking Fund" untuk menyiapkan dana pengeluaran tahunan/berkala Anda.</span>';
+        } else {
+          items.forEach(function (it) {
+            totalTarget += it.target_amount;
+            totalCollected += it.collected_amount;
+            totalMonthly += it.monthly_deposit;
+
+            var pct = it.percentage || 0;
+            var div = document.createElement('div');
+            div.className = 'card';
+            div.style.padding = '16px 20px';
+            div.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">' +
+              '  <div>' +
+              '    <strong style="font-size:1rem; color:var(--text-main);">' + it.name + '</strong>' +
+              '    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Target Jatuh Tempo: ' + (it.target_date || '-') + ' (' + it.months_remaining + ' bulan lagi)</div>' +
+              '  </div>' +
+              '  <span class="currency-val" style="font-weight:700; color:#38BDF8;">' + pct + '% Terkumpul</span>' +
+              '</div>' +
+              '<div style="height:8px; background:var(--bg-primary); border-radius:99px; overflow:hidden;">' +
+              '  <div style="width:' + Math.min(100, pct) + '%; height:100%; background:linear-gradient(90deg, #38BDF8, #10B981);"></div>' +
+              '</div>' +
+              '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:8px; font-size:0.78rem; color:var(--text-muted); margin-top:10px; padding-top:8px; border-top:1px dashed var(--border-color);">' +
+              '  <div>Target Nominal: <br><strong class="currency-val" style="color:var(--text-main); font-size:0.85rem;">' + self.fmtRp(it.target_amount) + '</strong></div>' +
+              '  <div>Dana Terkumpul: <br><strong class="currency-val" style="color:#6EE7B7; font-size:0.85rem;">' + self.fmtRp(it.collected_amount) + '</strong></div>' +
+              '  <div>Kebutuhan Setoran: <br><strong class="currency-val" style="color:#FCD34D; font-size:0.85rem;">' + self.fmtRp(it.monthly_deposit) + '/bln</strong></div>' +
+              '</div>' +
+              '<div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">' +
+              '  <button class="btn-sm-action" onclick="app.openEditSinkingFund(' + it.id + ', \'' + (it.name || '').replace(/'/g, "\\'") + '\', ' + it.target_amount + ', \'' + it.target_date + '\', ' + it.collected_amount + ', ' + (it.category_id || 'null') + ', ' + (it.wallet_id || 'null') + ', \'' + (it.notes || '').replace(/'/g, "\\'") + '\')">✏️ Edit</button>' +
+              '  <button class="btn-sm-action" style="color:var(--accent-rose);" onclick="app.deleteSinkingFund(' + it.id + ', \'' + (it.name || '').replace(/'/g, "\\'") + '\')">🗑️ Hapus</button>' +
+              '</div>';
+            c.appendChild(div);
+          });
+        }
+
+        // Update Hero Sinking
+        var elT = document.getElementById('sinkingHeroTotalTarget');
+        var elC = document.getElementById('sinkingHeroTotalCollected');
+        var elM = document.getElementById('sinkingHeroMonthlyNeeded');
+        if (elT) elT.textContent = self.fmtRp(totalTarget);
+        if (elC) elC.textContent = self.fmtRp(totalCollected);
+        if (elM) elM.textContent = self.fmtRp(totalMonthly) + '/bln';
+      },
+
+      openSinkingFundModal: function () {
+        document.getElementById('sinkingModalTitle').textContent = 'Tambah Pos Sinking Fund';
+        document.getElementById('sfId').value = '';
+        document.getElementById('sfName').value = '';
+        document.getElementById('sfTarget').value = '';
+        document.getElementById('sfTargetDate').value = '';
+        document.getElementById('sfCollected').value = '0';
+        document.getElementById('sfNotes').value = '';
+        this.calcSinkingDepositPreview();
+        this.openModal('modalSinkingFund');
+      },
+
+      openEditSinkingFund: function (id, name, target, date, collected, catId, walId, notes) {
+        document.getElementById('sinkingModalTitle').textContent = 'Edit Pos Sinking Fund';
+        document.getElementById('sfId').value = id;
+        document.getElementById('sfName').value = name;
+        document.getElementById('sfTarget').value = target;
+        document.getElementById('sfTargetDate').value = date;
+        document.getElementById('sfCollected').value = collected;
+        document.getElementById('sfNotes').value = notes || '';
+        var cSel = document.getElementById('sfCat');
+        if (cSel && catId) cSel.value = catId;
+        var wSel = document.getElementById('sfWallet');
+        if (wSel && walId) wSel.value = walId;
+        this.calcSinkingDepositPreview();
+        this.openModal('modalSinkingFund');
+      },
+
+      calcSinkingDepositPreview: function () {
+        var target = Number(document.getElementById('sfTarget').value) || 0;
+        var collected = Number(document.getElementById('sfCollected').value) || 0;
+        var dateStr = document.getElementById('sfTargetDate').value;
+        var previewEl = document.getElementById('sfMonthlyPreview');
+        if (!previewEl) return;
+
+        var months = 1;
+        if (dateStr) {
+          var now = new Date();
+          var tDate = new Date(dateStr);
+          months = Math.max(1, (tDate.getFullYear() - now.getFullYear()) * 12 + (tDate.getMonth() - now.getMonth()));
+        }
+        var needed = Math.max(0, Math.ceil((target - collected) / months));
+        previewEl.textContent = this.fmtRp(needed) + ' / bulan (' + months + ' bulan lagi)';
+      },
+
+      saveSinkingFund: function (e) {
+        e.preventDefault();
+        var btn = document.getElementById('btnSubmitSinkingFund');
+        if (!this.lockSubmit(btn)) return;
+
+        var self = this;
+        var payload = {
+          id: document.getElementById('sfId').value,
+          name: document.getElementById('sfName').value,
+          target_amount: Number(document.getElementById('sfTarget').value) || 0,
+          target_date: document.getElementById('sfTargetDate').value,
+          collected_amount: Number(document.getElementById('sfCollected').value) || 0,
+          category_id: document.getElementById('sfCat').value,
+          wallet_id: document.getElementById('sfWallet').value,
+          notes: document.getElementById('sfNotes').value
+        };
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              self.unlockSubmit(btn);
+              alert(res.message);
+              self.closeModal('modalSinkingFund');
+              self.loadSinkingFunds(true);
+              self.loadBudgetAnalysis();
+            })
+            .withFailureHandler(function (err) {
+              self.unlockSubmit(btn);
+              alert('Gagal: ' + (err.message || err));
+            })
+            .apiSaveSinkingFund(payload, 'User');
+        }
+      },
+
+      deleteSinkingFund: function (id, name) {
+        if (!confirm('Hapus pos sinking fund "' + name + '"?')) return;
+        var self = this;
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              alert(res.message);
+              self.loadSinkingFunds(true);
+              self.loadBudgetAnalysis();
+            })
+            .withFailureHandler(function (err) {
+              alert('Gagal: ' + (err.message || err));
+            })
+            .apiDeleteSinkingFund(id, 'User');
+        }
+      },
+
+      // BUDGET EVALUATION
+      loadBudgetEvaluation: function (forceRefresh) {
+        var self = this;
+        var p = document.getElementById('bEvalPeriodFilter') ? document.getElementById('bEvalPeriodFilter').value : (document.getElementById('bPeriodFilter') ? document.getElementById('bPeriodFilter').value : new Date().toISOString().slice(0, 7));
+        var filterEl = document.getElementById('bEvalPeriodFilter');
+        if (filterEl && !filterEl.value) filterEl.value = p;
+
+        var container = document.getElementById('budgetEvaluationContainer');
+        if (container) container.innerHTML = '<span style="color:var(--text-muted)">Mengevaluasi kinerja anggaran ' + p + '...</span>';
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              self.renderBudgetEvaluation(res);
+            })
+            .withFailureHandler(function (err) {
+              if (container) container.innerHTML = '<span style="color:var(--accent-rose)">Gagal memuat evaluasi: ' + (err.message || err) + '</span>';
+            })
+            .apiGetBudgetEvaluation(p, 'monthly');
+        }
+      },
+
+      renderBudgetEvaluation: function (data) {
+        var self = this;
+        var container = document.getElementById('budgetEvaluationContainer');
+        if (!container || !data) return;
+
+        var overHtml = '';
+        if (data.overbudget_categories && data.overbudget_categories.length > 0) {
+          overHtml = '<div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">';
+          data.overbudget_categories.forEach(function (c) {
+            overHtml += '<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(244,63,94,0.08); padding:8px 12px; border-radius:8px; border:1px solid rgba(244,63,94,0.2);">' +
+              '  <div><strong>' + c.category_name + '</strong> &bull; ' + c.percentage + '% plafon</div>' +
+              '  <span style="color:var(--accent-rose); font-weight:700;">+' + self.fmtRp(c.over_amount) + '</span>' +
+              '</div>';
+          });
+          overHtml += '</div>';
+        } else {
+          overHtml = '<p style="color:#10B981; font-size:0.82rem; margin-top:6px;">🎉 Luar biasa! Tidak ada kategori yang melampaui plafon belanja bulan ini.</p>';
+        }
+
+        container.innerHTML = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:14px; margin-bottom:18px;">' +
+          '  <div class="card" style="padding:16px; border-left:4px solid #38BDF8;">' +
+          '    <span class="card-title">🏆 Skor Disiplin Anggaran</span>' +
+          '    <div style="font-size:2rem; font-weight:900; color:' + (data.health_score >= 80 ? '#10B981' : (data.health_score >= 60 ? '#F59E0B' : '#F43F5E')) + '; margin-top:4px;">' + data.health_score + ' / 100</div>' +
+          '    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Kepatuhan terhadap batas pagu yang ditetapkan</p>' +
+          '  </div>' +
+          '  <div class="card" style="padding:16px; border-left:4px solid #10B981;">' +
+          '    <span class="card-title">💡 Efisiensi Belanja (Surplus)</span>' +
+          '    <div style="font-size:1.6rem; font-weight:900; color:' + (data.savings_efficiency >= 0 ? '#6EE7B7' : '#FDA4AF') + '; margin-top:4px;">' + self.fmtRp(data.savings_efficiency) + '</div>' +
+          '    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">' + (data.savings_efficiency >= 0 ? ('Berhasil menghemat ' + data.efficiency_pct + '% dari pagu') : 'Defisit dari total alokasi') + '</p>' +
+          '  </div>' +
+          '  <div class="card" style="padding:16px; border-left:4px solid #F59E0B;">' +
+          '    <span class="card-title">📈 Tren Belanja MoM (vs Bulan Lalu)</span>' +
+          '    <div style="font-size:1.4rem; font-weight:800; color:var(--text-main); margin-top:4px;">' + (data.mom.diff >= 0 ? '+' : '') + self.fmtRp(data.mom.diff) + '</div>' +
+          '    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Pertumbuhan: ' + (data.mom.growth_pct >= 0 ? '+' : '') + data.mom.growth_pct + '% dibanding ' + data.mom.prev_period + '</p>' +
+          '  </div>' +
+          '</div>' +
+          '<div class="card" style="padding:18px;">' +
+          '  <h3 style="font-size:0.95rem; font-weight:800; margin:0 0 6px 0;">🚨 Evaluasi Kategori Overbudget & Rekomendasi</h3>' +
+          '  <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:12px;">Pos pengeluaran yang memerlukan perhatian atau penyesuaian gaya hidup:</p>' +
+          overHtml +
+          '</div>';
+      },
+
+      // BUDGET REVISION HISTORY
+      openBudgetHistoryModal: function () {
+        var self = this;
+        this.openModal('modalBudgetHistory');
+        var container = document.getElementById('budgetHistoryListContainer');
+        if (container) container.innerHTML = '<span style="color:var(--text-muted)">Memuat riwayat perubahan...</span>';
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              var list = (res && res.history) || [];
+              self.renderBudgetHistory(list);
+            })
+            .withFailureHandler(function (err) {
+              if (container) container.innerHTML = '<span style="color:var(--accent-rose)">Gagal: ' + (err.message || err) + '</span>';
+            })
+            .apiGetBudgetHistory();
+        }
+      },
+
+      renderBudgetHistory: function (items) {
+        var self = this;
+        var container = document.getElementById('budgetHistoryListContainer');
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (!items || items.length === 0) {
+          container.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px;">Belum ada catatan revisi anggaran di log audit.</div>';
+          return;
+        }
+
+        var html = '<div style="display:flex; flex-direction:column; gap:8px;">';
+        items.forEach(function (h) {
+          var actColor = h.action === 'CREATE_BUDGET' ? '#10B981' : (h.action === 'DELETE_BUDGET' ? '#F43F5E' : '#38BDF8');
+          var actBadge = '<span style="font-size:0.68rem; padding:2px 6px; border-radius:4px; background:rgba(56,189,248,0.15); color:' + actColor + '; font-weight:700;">' + h.action + '</span>';
+
+          html += '<div style="background:var(--bg-card); padding:10px 14px; border-radius:10px; border:1px solid var(--border-color);">' +
+            '  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+            '    <div style="display:flex; align-items:center; gap:8px;">' +
+            '      <strong>' + h.entity_id + '</strong> ' + actBadge +
+            '    </div>' +
+            '    <span style="font-size:0.72rem; color:var(--text-muted);">' + h.timestamp + ' &bull; ' + h.actor + '</span>' +
+            '  </div>' +
+            '  <div style="font-size:0.78rem; color:var(--text-muted);">' +
+            '    Plafon: ' + self.fmtRp(h.old_value) + ' &rarr; <strong style="color:var(--text-main);">' + self.fmtRp(h.new_value) + '</strong> &bull; ' + (h.reason || '-') +
+            '  </div>' +
+            '</div>';
+        });
+        html += '</div>';
+        container.innerHTML = html;
       },
 
       // INVESTASI (SIMPEL: MODAL & NILAI SAAT INI + ROI %)
