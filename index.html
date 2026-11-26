@@ -592,6 +592,15 @@
       opacity: 0.8;
     }
 
+    .trend-hitbox {
+      cursor: pointer;
+      transition: fill 0.15s ease;
+    }
+
+    .trend-hitbox:hover {
+      fill: rgba(255, 255, 255, 0.05);
+    }
+
     /* Tables */
     .table-wrapper {
       width: 100%;
@@ -1512,7 +1521,7 @@
         <div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <div class="brand-title">RuangDana</div>
-            <span style="font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38BDF8;">v1.56.0</span>
+            <span style="font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38BDF8;">v1.57.0</span>
           </div>
           <div class="brand-subtitle">Finansial Keluarga</div>
         </div>
@@ -1599,7 +1608,7 @@
           <div>
             <div style="display: flex; align-items: center; gap: 6px;">
               <span class="header-title-text">RuangDana</span>
-              <span class="app-version-badge" style="font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3);">v1.56.0</span>
+              <span class="app-version-badge" style="font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3);">v1.57.0</span>
             </div>
             <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Pembukuan Keuangan Terpadu</span>
           </div>
@@ -1742,7 +1751,10 @@
             <!-- Tren Arus Kas (Harian, Bulanan, Tahunan) -->
             <div class="card">
               <div class="chart-header">
-                <h3 style="font-size: 0.95rem; font-weight: 700;">Tren Arus Kas</h3>
+                <div>
+                  <h3 style="font-size: 0.95rem; font-weight: 700; margin: 0;">Tren Arus Kas</h3>
+                  <div id="trendChartSubtitle" style="font-size: 0.73rem; color: var(--text-muted); margin-top: 2px;">Arus harian &bull; per hari</div>
+                </div>
                 <div style="display: flex; gap: 4px;">
                   <button class="switch-pill active" id="btnTrendDaily"
                     onclick="app.switchTrendPeriod('daily')">Harian</button>
@@ -3961,7 +3973,7 @@
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 14px; flex-wrap: wrap; gap: 8px;">
-        <span style="font-size: 0.72rem; color: var(--text-muted);">RuangDana &bull; Versi Sistem: <strong style="color: var(--accent-blue);">v1.56.0</strong></span>
+        <span style="font-size: 0.72rem; color: var(--text-muted);">RuangDana &bull; Versi Sistem: <strong style="color: var(--accent-blue);">v1.57.0</strong></span>
         <button type="button" class="btn-sm-action" onclick="app.closeModal('modalUnifiedSettings')">Tutup</button>
       </div>
     </div>
@@ -5550,9 +5562,20 @@
 
       switchTrendPeriod: function (p) {
         this.trendPeriod = p;
-        document.getElementById('btnTrendDaily').classList.toggle('active', p === 'daily');
-        document.getElementById('btnTrendMonthly').classList.toggle('active', p === 'monthly');
-        document.getElementById('btnTrendYearly').classList.toggle('active', p === 'yearly');
+        var btnD = document.getElementById('btnTrendDaily');
+        var btnM = document.getElementById('btnTrendMonthly');
+        var btnY = document.getElementById('btnTrendYearly');
+        if (btnD) btnD.classList.toggle('active', p === 'daily');
+        if (btnM) btnM.classList.toggle('active', p === 'monthly');
+        if (btnY) btnY.classList.toggle('active', p === 'yearly');
+
+        var subTitle = document.getElementById('trendChartSubtitle');
+        if (subTitle) {
+          if (p === 'daily') subTitle.innerHTML = 'Arus harian &bull; per hari';
+          else if (p === 'monthly') subTitle.innerHTML = 'Arus bulanan &bull; per bulan';
+          else if (p === 'yearly') subTitle.innerHTML = 'Arus tahunan &bull; per tahun';
+        }
+
         if (this.cache.dashboard && this.cache.dashboard.trend_data) {
           this.renderTrendChart(this.cache.dashboard.trend_data);
         }
@@ -5577,7 +5600,7 @@
           if (item.outflow > maxVal) maxVal = item.outflow;
         });
 
-        // Nice ceiling rounding untuk Sumbu Y
+        // Nice ceiling rounding untuk Sumbu Y (misal: 0, 6jt, 11jt, 17jt, 22jt)
         var niceMax = maxVal;
         if (niceMax <= 100000) niceMax = 100000;
         else if (niceMax <= 500000) niceMax = Math.ceil(niceMax / 100000) * 100000;
@@ -5586,75 +5609,184 @@
         else if (niceMax <= 50000000) niceMax = Math.ceil(niceMax / 5000000) * 5000000;
         else niceMax = Math.ceil(niceMax / 10000000) * 10000000;
 
-        var chartWidth = 500, chartHeight = 175;
-        var padLeft = 54, padRight = 16, padTop = 16, padBottom = 26;
+        var chartWidth = 520, chartHeight = 185;
+        var padLeft = 56, padRight = 18, padTop = 18, padBottom = 28;
         var plotWidth = chartWidth - padLeft - padRight;
         var plotHeight = chartHeight - padTop - padBottom;
-
-        var barGroupWidth = list.length > 0 ? (plotWidth / list.length) : plotWidth;
-        var barWidth = Math.max(4, Math.min(14, barGroupWidth / 2.6));
+        var baselineY = padTop + plotHeight;
 
         // 1. Gambar Garis Bantu Grid Horizontal & Label Sumbu Y
         var yGridHtml = '';
-        var yTicks = [0, 0.33, 0.66, 1.0];
+        var yTicks = [0, 0.25, 0.5, 0.75, 1.0];
         var self = this;
         yTicks.forEach(function (pct) {
-          var yPos = padTop + plotHeight - (pct * plotHeight);
+          var yPos = baselineY - (pct * plotHeight);
           var tickVal = Math.round(niceMax * pct);
           var labelText = (pct === 0) ? '0' : self.fmtShortRp(tickVal);
 
-          yGridHtml += '<line x1="' + padLeft + '" y1="' + yPos + '" x2="' + (chartWidth - padRight) + '" y2="' + yPos + '" stroke="rgba(148, 163, 184, 0.15)" stroke-dasharray="' + (pct === 0 ? 'none' : '3 3') + '" stroke-width="1"></line>';
-          yGridHtml += '<text class="axis-val" x="' + (padLeft - 6) + '" y="' + (yPos + 3.5) + '" fill="#94A3B8" font-size="9" text-anchor="end" font-family="system-ui, sans-serif">' + labelText + '</text>';
+          yGridHtml += '<line x1="' + padLeft + '" y1="' + yPos.toFixed(1) + '" x2="' + (chartWidth - padRight) + '" y2="' + yPos.toFixed(1) + '" stroke="rgba(148, 163, 184, ' + (pct === 0 ? '0.35' : '0.12') + ')" stroke-dasharray="' + (pct === 0 ? 'none' : '3 3') + '" stroke-width="1"></line>';
+          yGridHtml += '<text class="axis-val" x="' + (padLeft - 8) + '" y="' + (yPos + 3.5).toFixed(1) + '" fill="#94A3B8" font-size="9" text-anchor="end" font-family="system-ui, sans-serif">' + labelText + '</text>';
+          // Sumbu Y tick marks di kiri
+          yGridHtml += '<line x1="' + (padLeft - 3) + '" y1="' + yPos.toFixed(1) + '" x2="' + padLeft + '" y2="' + yPos.toFixed(1) + '" stroke="rgba(148, 163, 184, 0.35)" stroke-width="1.2"></line>';
         });
 
-        // 2. Batang Data & Label Sumbu X
-        var svgBars = '';
+        // 2. Pemetaan Koordinat Titik Data
+        var ptsIn = [];
+        var ptsOut = [];
+        var N = list.length;
         list.forEach(function (item, idx) {
-          var x = padLeft + idx * barGroupWidth + (barGroupWidth / 2);
-          var hIn = (item.inflow / niceMax) * plotHeight;
-          var hOut = (item.outflow / niceMax) * plotHeight;
-          var yIn = padTop + plotHeight - hIn;
-          var yOut = padTop + plotHeight - hOut;
+          var x = padLeft + (N > 1 ? (idx * (plotWidth / (N - 1))) : (plotWidth / 2));
+          var yIn = baselineY - (niceMax > 0 ? (item.inflow / niceMax) * plotHeight : 0);
+          var yOut = baselineY - (niceMax > 0 ? (item.outflow / niceMax) * plotHeight : 0);
+          ptsIn.push({ x: x, y: yIn, item: item, idx: idx });
+          ptsOut.push({ x: x, y: yOut, item: item, idx: idx });
+        });
 
+        // Helper Bezier Spline
+        function buildSmoothSpline(pts, baseline) {
+          if (!pts || pts.length === 0) return '';
+          if (pts.length === 1) return 'M ' + pts[0].x.toFixed(1) + ' ' + pts[0].y.toFixed(1);
+          if (pts.length === 2) {
+            return 'M ' + pts[0].x.toFixed(1) + ' ' + pts[0].y.toFixed(1) + ' L ' + pts[1].x.toFixed(1) + ' ' + pts[1].y.toFixed(1);
+          }
+          var path = 'M ' + pts[0].x.toFixed(1) + ' ' + pts[0].y.toFixed(1);
+          var tension = 0.22;
+          for (var i = 0; i < pts.length - 1; i++) {
+            var p0 = i > 0 ? pts[i - 1] : pts[i];
+            var p1 = pts[i];
+            var p2 = pts[i + 1];
+            var p3 = (i < pts.length - 2) ? pts[i + 2] : p2;
+
+            var cp1x = p1.x + (p2.x - p0.x) * tension;
+            var cp1y = p1.y + (p2.y - p0.y) * tension;
+            var cp2x = p2.x - (p3.x - p1.x) * tension;
+            var cp2y = p2.y - (p3.y - p1.y) * tension;
+
+            if (baseline !== undefined) {
+              if (cp1y > baseline) cp1y = baseline;
+              if (cp2y > baseline) cp2y = baseline;
+              if (p1.y >= baseline && p2.y >= baseline) {
+                cp1y = baseline;
+                cp2y = baseline;
+              }
+            }
+
+            path += ' C ' + cp1x.toFixed(1) + ' ' + cp1y.toFixed(1) + ', ' +
+                            cp2x.toFixed(1) + ' ' + cp2y.toFixed(1) + ', ' +
+                            p2.x.toFixed(1) + ' ' + p2.y.toFixed(1);
+          }
+          return path;
+        }
+
+        var lineInflowPath = buildSmoothSpline(ptsIn, baselineY);
+        var lineOutflowPath = buildSmoothSpline(ptsOut, baselineY);
+
+        var firstX = ptsIn[0].x.toFixed(1);
+        var lastX = ptsIn[ptsIn.length - 1].x.toFixed(1);
+
+        var areaInflowPath = lineInflowPath +
+          ' L ' + lastX + ' ' + baselineY.toFixed(1) +
+          ' L ' + firstX + ' ' + baselineY.toFixed(1) + ' Z';
+
+        var areaOutflowPath = lineOutflowPath +
+          ' L ' + lastX + ' ' + baselineY.toFixed(1) +
+          ' L ' + firstX + ' ' + baselineY.toFixed(1) + ' Z';
+
+        var defsHtml = '<defs>' +
+          '<linearGradient id="trendGradInflow" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0%" stop-color="#10B981" stop-opacity="0.32"></stop>' +
+          '<stop offset="70%" stop-color="#10B981" stop-opacity="0.08"></stop>' +
+          '<stop offset="100%" stop-color="#10B981" stop-opacity="0.0"></stop>' +
+          '</linearGradient>' +
+          '<linearGradient id="trendGradOutflow" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0%" stop-color="#F43F5E" stop-opacity="0.25"></stop>' +
+          '<stop offset="70%" stop-color="#F43F5E" stop-opacity="0.06"></stop>' +
+          '<stop offset="100%" stop-color="#F43F5E" stop-opacity="0.0"></stop>' +
+          '</linearGradient>' +
+          '</defs>';
+
+        var svgMarkers = '';
+        var svgHitzones = '';
+        var svgXLabels = '';
+        var colWidth = (list.length > 1) ? (plotWidth / (list.length - 1)) : plotWidth;
+
+        list.forEach(function (item, idx) {
+          var pIn = ptsIn[idx];
+          var pOut = ptsOut[idx];
+          var safeLabel = String(item.label).replace(/'/g, "\\'");
           var tipText = 'Pemasukan: ' + self.fmtRp(item.inflow) + '<br>Pengeluaran: ' + self.fmtRp(item.outflow);
           var netText = 'Kas Bersih: ' + (item.net >= 0 ? '+' : '') + self.fmtRp(item.net) + ' &bull; Klik utk rincian';
-          // Sanitize item.label (e.g. Des '25, Okt '26) to prevent broken string syntax in inline JS
-          var safeLabel = String(item.label).replace(/'/g, "\\'");
 
-          // Inflow bar (Emerald)
-          svgBars += '<rect class="trend-bar" x="' + (x - barWidth - 1) + '" y="' + yIn + '" width="' + barWidth + '" height="' + Math.max(1, hIn) + '" rx="3" fill="#10B981" ' +
-            'style="cursor: pointer; transition: opacity 0.15s;" ' +
-            'onclick="app.handleTrendBarClick(\'inflow\', \'' + item.full_date + '\', \'' + self.trendPeriod + '\')" ' +
-            'onmouseenter="this.style.opacity=0.8; app.showTooltip(event, \'Periode ' + safeLabel + '\', \'' + tipText + '\', \'' + netText + '\')" ' +
-            'onmousemove="app.moveTooltip(event)" ' +
-            'onmouseleave="this.style.opacity=1; app.hideTooltip()"></rect>';
-
-          // Outflow bar (Rose)
-          svgBars += '<rect class="trend-bar" x="' + (x + 1) + '" y="' + yOut + '" width="' + barWidth + '" height="' + Math.max(1, hOut) + '" rx="3" fill="#F43F5E" ' +
-            'style="cursor: pointer; transition: opacity 0.15s;" ' +
-            'onclick="app.handleTrendBarClick(\'outflow\', \'' + item.full_date + '\', \'' + self.trendPeriod + '\')" ' +
-            'onmouseenter="this.style.opacity=0.8; app.showTooltip(event, \'Periode ' + safeLabel + '\', \'' + tipText + '\', \'' + netText + '\')" ' +
-            'onmousemove="app.moveTooltip(event)" ' +
-            'onmouseleave="this.style.opacity=1; app.hideTooltip()"></rect>';
+          // Data Markers
+          if (item.inflow > 0) {
+            svgMarkers += '<circle cx="' + pIn.x.toFixed(1) + '" cy="' + pIn.y.toFixed(1) + '" r="3.5" ' +
+              'fill="#10B981" stroke="#0F172A" stroke-width="1.8" style="pointer-events: none;"></circle>';
+          }
+          if (item.outflow > 0) {
+            svgMarkers += '<circle cx="' + pOut.x.toFixed(1) + '" cy="' + pOut.y.toFixed(1) + '" r="3.5" ' +
+              'fill="#F43F5E" stroke="#0F172A" stroke-width="1.8" style="pointer-events: none;"></circle>';
+          }
 
           // Label Sumbu X
+          var showLabel = true;
           var xLabelText = item.label;
-          if (self.trendPeriod === 'daily' && list.length > 8) {
+          if (self.trendPeriod === 'daily') {
             xLabelText = item.day_num || (item.full_date ? item.full_date.slice(8) : item.label);
+            if (list.length > 10 && idx % 2 !== 0 && idx !== list.length - 1) {
+              showLabel = false;
+            }
           }
-          svgBars += '<text x="' + x + '" y="' + (chartHeight - 6) + '" fill="#94A3B8" font-size="9" text-anchor="middle" font-family="system-ui, sans-serif">' + xLabelText + '</text>';
+          if (showLabel) {
+            svgXLabels += '<text x="' + pIn.x.toFixed(1) + '" y="' + (chartHeight - 8) + '" fill="#94A3B8" font-size="9" text-anchor="middle" font-family="system-ui, sans-serif">' + xLabelText + '</text>';
+            svgXLabels += '<line x1="' + pIn.x.toFixed(1) + '" y1="' + baselineY + '" x2="' + pIn.x.toFixed(1) + '" y2="' + (baselineY + 4) + '" stroke="rgba(148, 163, 184, 0.35)" stroke-width="1"></line>';
+          }
+
+          // Hitbox Vertikal Transparan
+          var hitX = Math.max(padLeft, pIn.x - (colWidth / 2));
+          var hitW = Math.min(plotWidth, colWidth);
+          var activeAction = (item.outflow > item.inflow) ? 'outflow' : 'inflow';
+
+          svgHitzones += '<rect class="trend-hitbox" x="' + hitX.toFixed(1) + '" y="' + padTop + '" width="' + hitW.toFixed(1) + '" height="' + plotHeight + '" fill="transparent" ' +
+            'style="cursor: pointer;" ' +
+            'onclick="app.handleTrendBarClick(\'' + activeAction + '\', \'' + item.full_date + '\', \'' + self.trendPeriod + '\')" ' +
+            'onmouseenter="this.setAttribute(\'fill\', \'rgba(255,255,255,0.04)\'); app.showTooltip(event, \'Periode ' + safeLabel + '\', \'' + tipText + '\', \'' + netText + '\')" ' +
+            'onmousemove="app.moveTooltip(event)" ' +
+            'onmouseleave="this.setAttribute(\'fill\', \'transparent\'); app.hideTooltip()"></rect>';
         });
 
-        container.innerHTML = '<div style="display: flex; flex-direction: column; width: 100%;">' +
-          '<div style="display: flex; gap: 14px; font-size: 0.75rem; margin-bottom: 8px; justify-content: flex-end; padding-right: 10px;">' +
-          '<span style="display: flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; background: #10B981; border-radius: 2px;"></span> Pemasukan</span>' +
-          '<span style="display: flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; background: #F43F5E; border-radius: 2px;"></span> Pengeluaran / Kas Keluar</span>' +
-          '</div>' +
-          '<svg width="100%" height="' + chartHeight + '" viewBox="0 0 ' + chartWidth + ' ' + chartHeight + '" style="overflow: visible; display: block;">' +
-          yGridHtml +
-          svgBars +
+        // Legenda bergaya Garis-Titik persis seperti referensi pengguna: —●— Keluar & —●— Masuk
+        var legendHtml = '<div style="display: flex; gap: 16px; font-size: 0.78rem; margin-bottom: 8px; justify-content: flex-end; align-items: center; padding-right: 8px;">' +
+          '<span style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted);">' +
+          '<svg width="26" height="12" style="vertical-align: middle;">' +
+          '<line x1="0" y1="6" x2="26" y2="6" stroke="#F43F5E" stroke-width="2.2" stroke-linecap="round"></line>' +
+          '<circle cx="13" cy="6" r="3.5" fill="#F43F5E" stroke="var(--bg-card, #0F172A)" stroke-width="1.8"></circle>' +
           '</svg>' +
-          '<div style="text-align: center; font-size: 0.72rem; color: var(--text-muted); margin-top: 6px;">💡 Klik batang untuk melihat transaksi pada tanggal tersebut (HP: ketuk 2x)</div>' +
+          '<strong style="color: var(--text-normal);">Keluar</strong>' +
+          '</span>' +
+          '<span style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted);">' +
+          '<svg width="26" height="12" style="vertical-align: middle;">' +
+          '<line x1="0" y1="6" x2="26" y2="6" stroke="#10B981" stroke-width="2.2" stroke-linecap="round"></line>' +
+          '<circle cx="13" cy="6" r="3.5" fill="#10B981" stroke="var(--bg-card, #0F172A)" stroke-width="1.8"></circle>' +
+          '</svg>' +
+          '<strong style="color: var(--text-normal);">Masuk</strong>' +
+          '</span>' +
+          '</div>';
+
+        container.innerHTML = '<div style="display: flex; flex-direction: column; width: 100%;">' +
+          legendHtml +
+          '<svg width="100%" height="' + chartHeight + '" viewBox="0 0 ' + chartWidth + ' ' + chartHeight + '" style="overflow: visible; display: block;">' +
+          defsHtml +
+          yGridHtml +
+          '<line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + baselineY + '" stroke="rgba(148, 163, 184, 0.35)" stroke-width="1.2"></line>' +
+          '<path d="' + areaInflowPath + '" fill="url(#trendGradInflow)" style="pointer-events: none;"></path>' +
+          '<path d="' + areaOutflowPath + '" fill="url(#trendGradOutflow)" style="pointer-events: none;"></path>' +
+          '<path d="' + lineInflowPath + '" fill="none" stroke="#10B981" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"></path>' +
+          '<path d="' + lineOutflowPath + '" fill="none" stroke="#F43F5E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"></path>' +
+          svgMarkers +
+          svgXLabels +
+          svgHitzones +
+          '</svg>' +
+          '<div style="text-align: center; font-size: 0.72rem; color: var(--text-muted); margin-top: 6px;">💡 Arahkan atau ketuk grafik untuk rincian tanggal (HP: ketuk 2x untuk lihat transaksi)</div>' +
           '</div>';
       },
       // TRANSAKSI & FILTERS & EXPORT
