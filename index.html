@@ -1512,7 +1512,7 @@
         <div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <div class="brand-title">RuangDana</div>
-            <span style="font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38BDF8;">v1.55.0</span>
+            <span style="font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38BDF8;">v1.56.0</span>
           </div>
           <div class="brand-subtitle">Finansial Keluarga</div>
         </div>
@@ -1547,7 +1547,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
           </svg>
-          <span>Budget Bulanan</span>
+          <span>Anggaran & Budget</span>
         </a>
         <a class="nav-item" data-view="investments">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1599,7 +1599,7 @@
           <div>
             <div style="display: flex; align-items: center; gap: 6px;">
               <span class="header-title-text">RuangDana</span>
-              <span class="app-version-badge" style="font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3);">v1.55.0</span>
+              <span class="app-version-badge" style="font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3);">v1.56.0</span>
             </div>
             <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Pembukuan Keuangan Terpadu</span>
           </div>
@@ -1678,7 +1678,7 @@
             </div>
           </div>
 
-          <!-- METRIC GRID: FOKUS KENDALI OPERASIONAL KAS & ANGGARAN HARIAN (ANTI-WEALTH ILLUSION) -->
+          <!-- METRIC GRID: FOKUS KENDALI OPERASIONAL KAS & ANGGARAN HARIAN & TAHUNAN (ANTI-WEALTH ILLUSION) -->
           <div class="metric-grid">
             <!-- 1. Kas Likuid Operasional -->
             <div class="card" style="border-left: 3px solid #38BDF8;">
@@ -1687,32 +1687,30 @@
               <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">Uang riil di dompet & rekening bank siap pakai</p>
             </div>
             <!-- 2. Sisa Plafon Anggaran Belanja Bulan Ini -->
-            <div class="card" style="border-left: 3px solid #10B981;">
+            <div class="card" style="border-left: 3px solid #10B981; cursor: pointer;" onclick="app.switchBudgetTab('monthly'); app.switchView('budgets');" title="Klik untuk membuka rincian Budget Bulanan">
               <span class="card-title">🎯 Sisa Kuota Belanja Bulan Ini</span>
               <div class="card-val-big currency-val" id="dashBudgetRemainingCard" style="color: #6EE7B7;">Rp 0</div>
               <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">Plafon aman belanja yang masih boleh digunakan</p>
             </div>
-            <!-- 3. Sisa Pokok Utang Keluarga -->
+            <!-- 3. Sisa Plafon Anggaran Belanja Tahunan -->
+            <div class="card" style="border-left: 3px solid #8B5CF6; cursor: pointer;" onclick="app.switchBudgetTab('annual'); app.switchView('budgets');" title="Klik untuk membuka rincian Budget Tahunan">
+              <span class="card-title">📆 Sisa Kuota Belanja Tahun Ini</span>
+              <div class="card-val-big currency-val" id="dashAnnualBudgetRemainingCard" style="color: #DDD6FE;">Rp 0</div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;" id="dashAnnualBudgetSubtext">Plafon tahunan (Bulanan x 12 + Khusus)</p>
+            </div>
+            <!-- 4. Sisa Pokok Utang Keluarga -->
             <div class="card" style="border-left: 3px solid #F43F5E;">
               <span class="card-title">💳 Sisa Pokok Utang</span>
               <div class="card-val-big currency-val" id="dashDebtVal" style="color: var(--accent-rose);">Rp 0</div>
               <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">Kewajiban aktif yang harus dilunasi</p>
             </div>
-            <!-- 4. Akses Laporan Total Aset & Kekayaan (SPT & LHKPN) -->
-            <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; border: 1px dashed var(--accent-blue); background: rgba(56, 189, 248, 0.04);" onclick="app.switchView('asset-snapshot')">
-              <div>
-                <span class="card-title" style="color: var(--accent-blue);">🏛️ Kekayaan Bersih (Net Worth) & Laporan Harta</span>
-                <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">Lihat akumulasi aset jangka panjang, investasi & SPT/LHKPN di menu terdedikasi.</p>
-              </div>
-              <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between;">
-                <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-blue);">Buka Laporan Harta &rarr;</span>
-                <!-- Hidden DOM hooks to preserve script & regression test compatibility -->
-                <span id="dashNetWorth" style="display: none;">Rp 0</span>
-                <span id="dashInvVal" style="display: none;">Rp 0</span>
-                <span id="dashInvPnl" style="display: none;">Rp 0</span>
-                <span id="dashAssetVal" style="display: none;">Rp 0</span>
-              </div>
-            </div>
+          </div>
+          <!-- Hidden DOM hooks to preserve script & regression test compatibility -->
+          <div style="display: none;">
+            <span id="dashNetWorth">Rp 0</span>
+            <span id="dashInvVal">Rp 0</span>
+            <span id="dashInvPnl">Rp 0</span>
+            <span id="dashAssetVal">Rp 0</span>
           </div>
 
           <!-- Charts Grid -->
@@ -2023,23 +2021,80 @@
           <div class="metric-grid" id="walletsList"></div>
         </section>
 
-        <!-- 4. BUDGET BULANAN -->
+        <!-- 4. BUDGET ANGGARAN (BULANAN & TAHUNAN) -->
         <section class="view-section" id="view-budgets">
-          <div
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <h2 style="font-weight: 800; font-size: 1.4rem;">Budget Bulanan</h2>
-              <input type="month" id="bPeriodFilter" class="form-input"
-                style="width: auto; padding: 6px 12px; font-size: 0.82rem;" onchange="app.loadBudgets()">
-            </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button class="btn-secondary-action" onclick="app.copyPreviousMonthBudget()"
-                title="Salin seluruh alokasi budget dari 1 bulan sebelumnya ke bulan ini">📋 Salin Budget Bulan
-                Lalu</button>
-              <button class="btn-accent-blue" onclick="app.openBudgetModal()">+ Atur Budget</button>
-            </div>
+          <!-- Tab Navigation Switcher -->
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+            <button class="switch-pill active" id="tabBtnBudgetMonthly" onclick="app.switchBudgetTab('monthly')">📅 Budget Bulanan</button>
+            <button class="switch-pill" id="tabBtnBudgetAnnual" onclick="app.switchBudgetTab('annual')">📆 Budget Tahunan</button>
           </div>
-          <div style="display: flex; flex-direction: column; gap: 14px;" id="budgetsList"></div>
+
+          <!-- TAB 1: BUDGET BULANAN -->
+          <div id="tabBudgetMonthlyContent">
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <h2 style="font-weight: 800; font-size: 1.4rem;">Budget Bulanan</h2>
+                <input type="month" id="bPeriodFilter" class="form-input"
+                  style="width: auto; padding: 6px 12px; font-size: 0.82rem;" onchange="app.loadBudgets()">
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn-secondary-action" onclick="app.copyPreviousMonthBudget()"
+                  title="Salin seluruh alokasi budget dari 1 bulan sebelumnya ke bulan ini">📋 Salin Budget Bulan Lalu</button>
+                <button class="btn-accent-blue" onclick="app.openBudgetModal()">+ Atur Budget Bulanan</button>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 14px;" id="budgetsList"></div>
+          </div>
+
+          <!-- TAB 2: BUDGET TAHUNAN -->
+          <div id="tabBudgetAnnualContent" style="display: none;">
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <h2 style="font-weight: 800; font-size: 1.4rem;">Budget Tahunan</h2>
+                <select id="bAnnualYearFilter" class="form-select"
+                  style="width: auto; padding: 6px 12px; font-size: 0.82rem;" onchange="app.loadAnnualBudgets()">
+                  <option value="2024">Tahun 2024</option>
+                  <option value="2025">Tahun 2025</option>
+                  <option value="2026" selected>Tahun 2026</option>
+                  <option value="2027">Tahun 2027</option>
+                  <option value="2028">Tahun 2028</option>
+                </select>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn-accent-blue" onclick="app.openAnnualBudgetModal()">+ Atur Khusus Tahunan</button>
+              </div>
+            </div>
+
+            <!-- Kartu Ringkasan Makro Tahunan -->
+            <div class="card" style="margin-bottom: 20px; padding: 18px; border-left: 4px solid #8B5CF6; background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), transparent);" id="annualBudgetHeroCard">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div>
+                  <span style="font-size: 0.78rem; font-weight: 700; color: #A78BFA; text-transform: uppercase;">Total Plafon Anggaran Tahunan (Bulanan x 12 + Khusus)</span>
+                  <div style="font-size: 1.7rem; font-weight: 900; color: var(--text-main); margin-top: 4px;" id="annualHeroTotalLimit">Rp 0</div>
+                  <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;" id="annualHeroBreakdown">Rutin (Bulanan x 12): Rp 0 • Tambahan Khusus: Rp 0</p>
+                </div>
+                <div style="text-align: right;">
+                  <span style="font-size: 0.78rem; font-weight: 700; color: #10B981; text-transform: uppercase;">Sisa Kuota Aman Tahun Ini</span>
+                  <div style="font-size: 1.7rem; font-weight: 900; color: #6EE7B7; margin-top: 4px;" id="annualHeroRemaining">Rp 0</div>
+                  <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;" id="annualHeroSpent">Realisasi Belanja YTD: Rp 0</p>
+                </div>
+              </div>
+              <div style="margin-top: 14px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">
+                  <span>Realisasi Pengeluaran Terhadap Plafon Setahun</span>
+                  <span id="annualHeroPctLabel" style="font-weight: 700; color: #A78BFA;">0% Terpakai</span>
+                </div>
+                <div style="height: 9px; background: var(--bg-primary); border-radius: 99px; overflow: hidden;">
+                  <div id="annualHeroProgressBar" style="width: 0%; height: 100%; background: #8B5CF6; transition: width 0.3s ease;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- List Kategori Budget Tahunan -->
+            <div style="display: flex; flex-direction: column; gap: 14px;" id="annualBudgetsList"></div>
+          </div>
         </section>
 
         <!-- 5. INVESTASI -->
@@ -2300,8 +2355,7 @@
             <!-- Kekayaan Bersih -->
             <div class="card"
               style="padding: 16px; border-left: 4px solid #F59E0B; background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), transparent);">
-              <div style="color: #F59E0B; font-size: 0.78rem; font-weight: 700; text-transform: uppercase;">Kekayaan
-                Bersih (Net Worth SPT)</div>
+              <div style="color: #F59E0B; font-size: 0.78rem; font-weight: 700; text-transform: uppercase;">🏛️ Kekayaan Bersih (Net Worth) SPT</div>
               <div style="font-size: 1.45rem; font-weight: 900; color: var(--text-primary); margin-top: 4px;"
                 id="snapNetWorthSPT">Rp 0</div>
               <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;" id="snapNetWorthMarket">
@@ -3065,6 +3119,37 @@
   </div>
 
   <!-- ========================================================================
+       MODAL 5B: ATUR BATAS BUDGET KHUSUS TAHUNAN
+       ======================================================================== -->
+  <div class="modal-overlay" id="modalAnnualBudget">
+    <div class="modal-content">
+      <h3 style="margin-bottom: 16px; font-weight: 800;" id="annualBudgetModalTitle">Atur Batas Budget Tahunan</h3>
+      <form onsubmit="app.saveAnnualBudget(event)">
+        <input type="hidden" id="abId">
+        <div class="form-group">
+          <label class="form-label">Tahun Anggaran</label>
+          <input type="number" class="form-input" id="abYear" min="2020" max="2035" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kategori Pengeluaran</label>
+          <select class="form-select" id="abCat" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tambahan Plafon Khusus Tahunan (Rp)</label>
+          <input type="number" class="form-input" id="abLimit" placeholder="Contoh: 10000000" min="0" required>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">
+            💡 Anggaran khusus tahunan di luar belanja rutin bulanan, seperti Pajak Kendaraan (PKB/STNK), PBB, Asuransi Tahunan, Liburan/Mudik, Qurban, Uang Masuk Sekolah, atau Renovasi.
+          </p>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
+          <button type="button" class="btn-sm-action" onclick="app.closeModal('modalAnnualBudget')">Batal</button>
+          <button type="submit" class="btn-accent-blue" id="btnSubmitAnnualBudget">Simpan Budget Tahunan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
        MODAL 6: TAMBAH / EDIT INVESTASI (SIMPEL: MODAL & NILAI SAAT INI)
        ======================================================================== -->
   <div class="modal-overlay" id="modalInvestment">
@@ -3399,7 +3484,7 @@
       </button>
       <button class="drawer-nav-item" data-view="budgets" onclick="app.navFromDrawer('budgets')">
         <span style="font-size: 1.15rem;">🎯</span>
-        <span>Budget Bulanan</span>
+        <span>Anggaran & Budget</span>
       </button>
       <button class="drawer-nav-item" data-view="investments" onclick="app.navFromDrawer('investments')">
         <span style="font-size: 1.15rem;">📈</span>
@@ -3871,7 +3956,7 @@
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 14px; flex-wrap: wrap; gap: 8px;">
-        <span style="font-size: 0.72rem; color: var(--text-muted);">RuangDana &bull; Versi Sistem: <strong style="color: var(--accent-blue);">v1.55.0</strong></span>
+        <span style="font-size: 0.72rem; color: var(--text-muted);">RuangDana &bull; Versi Sistem: <strong style="color: var(--accent-blue);">v1.56.0</strong></span>
         <button type="button" class="btn-sm-action" onclick="app.closeModal('modalUnifiedSettings')">Tutup</button>
       </div>
     </div>
@@ -5125,7 +5210,10 @@
         if (viewName === 'dashboard') this.loadDashboard(forceRefresh);
         else if (viewName === 'transactions') this.loadTransactions(forceRefresh);
         else if (viewName === 'wallets') this.loadWallets(forceRefresh);
-        else if (viewName === 'budgets') this.loadBudgets(forceRefresh);
+        else if (viewName === 'budgets') {
+          if (this.activeBudgetTab === 'annual') this.loadAnnualBudgets(forceRefresh);
+          else this.loadBudgets(forceRefresh);
+        }
         else if (viewName === 'investments') this.loadInvestments(forceRefresh);
         else if (viewName === 'assets') this.loadAssets(forceRefresh);
         else if (viewName === 'debts') this.loadDebts(forceRefresh);
@@ -5264,6 +5352,28 @@
           if (remCardNo) {
             remCardNo.textContent = 'Belum Diatur';
             remCardNo.style.color = '#94A3B8';
+          }
+        }
+
+        // 3b. Sisa Plafon Anggaran Belanja Tahunan di Metric Grid
+        var abs = data.annual_budget_summary;
+        var remAnnualCard = document.getElementById('dashAnnualBudgetRemainingCard');
+        var subAnnualEl = document.getElementById('dashAnnualBudgetSubtext');
+        if (abs && abs.has_budget) {
+          if (remAnnualCard) {
+            remAnnualCard.textContent = this.fmtRp(abs.remaining);
+            remAnnualCard.style.color = abs.remaining > 0 ? '#DDD6FE' : '#FDA4AF';
+          }
+          if (subAnnualEl) {
+            subAnnualEl.innerHTML = 'Plafon: <strong>' + this.fmtRp(abs.total_limit) + '</strong> (' + abs.percentage + '% terpakai YTD)';
+          }
+        } else {
+          if (remAnnualCard) {
+            remAnnualCard.textContent = 'Belum Diatur';
+            remAnnualCard.style.color = '#94A3B8';
+          }
+          if (subAnnualEl) {
+            subAnnualEl.innerHTML = 'Klik untuk atur Budget Tahunan (Bulanan x 12 + Khusus)';
           }
         }
 
@@ -8151,6 +8261,186 @@
         }
       },
 
+      activeBudgetTab: 'monthly',
+
+      switchBudgetTab: function (tab) {
+        this.activeBudgetTab = tab;
+        var btnM = document.getElementById('tabBtnBudgetMonthly');
+        var btnA = document.getElementById('tabBtnBudgetAnnual');
+        var secM = document.getElementById('tabBudgetMonthlyContent');
+        var secA = document.getElementById('tabBudgetAnnualContent');
+
+        if (tab === 'annual') {
+          if (btnM) btnM.classList.remove('active');
+          if (btnA) btnA.classList.add('active');
+          if (secM) secM.style.display = 'none';
+          if (secA) secA.style.display = 'block';
+          this.loadAnnualBudgets();
+        } else {
+          if (btnM) btnM.classList.add('active');
+          if (btnA) btnA.classList.remove('active');
+          if (secM) secM.style.display = 'block';
+          if (secA) secA.style.display = 'none';
+          this.loadBudgets();
+        }
+      },
+
+      loadAnnualBudgets: function (forceRefresh) {
+        var self = this;
+        var selY = document.getElementById('bAnnualYearFilter');
+        var year = selY ? selY.value : String(new Date().getFullYear());
+
+        if (self.cache.annualBudgets && self.cache.annualBudgets[year] && !forceRefresh) {
+          self.renderAnnualBudgets(self.cache.annualBudgets[year], year);
+          return;
+        }
+
+        var c = document.getElementById('annualBudgetsList');
+        if (c) c.innerHTML = '<span style="color:var(--text-muted)">Memuat anggaran tahunan ' + year + '...</span>';
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              self.cache.annualBudgets = self.cache.annualBudgets || {};
+              self.cache.annualBudgets[year] = res;
+              self.renderAnnualBudgets(res, year);
+            })
+            .withFailureHandler(function (err) {
+              if (c) c.innerHTML = '<span style="color:var(--accent-rose)">Gagal memuat anggaran tahunan: ' + (err.message || err) + '</span>';
+            })
+            .apiGetAnnualBudgets(year);
+        }
+      },
+
+      renderAnnualBudgets: function (res, year) {
+        var self = this;
+        if (!res) return;
+        var s = res.summary || {};
+        var budgets = res.budgets || [];
+
+        // 1. Render Hero Card Tahunan
+        var elLimit = document.getElementById('annualHeroTotalLimit');
+        var elBreakdown = document.getElementById('annualHeroBreakdown');
+        var elRem = document.getElementById('annualHeroRemaining');
+        var elSpent = document.getElementById('annualHeroSpent');
+        var elPct = document.getElementById('annualHeroPctLabel');
+        var elBar = document.getElementById('annualHeroProgressBar');
+
+        if (elLimit) elLimit.textContent = self.fmtRp(s.total_limit || 0);
+        if (elBreakdown) elBreakdown.innerHTML = 'Rutin (Bulanan x 12): <strong>' + self.fmtRp(s.total_monthly_x12 || 0) + '</strong> &bull; Tambahan Khusus: <strong>' + self.fmtRp(s.total_annual_extra || 0) + '</strong>';
+        if (elRem) {
+          elRem.textContent = self.fmtRp(s.remaining || 0);
+          elRem.style.color = (s.remaining || 0) > 0 ? '#6EE7B7' : '#FDA4AF';
+        }
+        if (elSpent) elSpent.innerHTML = 'Realisasi Belanja YTD ' + (res.year || year) + ': <strong>' + self.fmtRp(s.total_spent || 0) + '</strong>';
+
+        var pct = s.percentage || 0;
+        if (elPct) {
+          elPct.textContent = pct + '% Terpakai';
+          elPct.style.color = pct > 100 ? '#FDA4AF' : (pct >= 80 ? '#FDE68A' : '#A78BFA');
+        }
+        if (elBar) {
+          elBar.style.width = Math.min(100, pct) + '%';
+          elBar.style.background = pct > 100 ? '#F43F5E' : (pct >= 80 ? '#F59E0B' : '#8B5CF6');
+        }
+
+        // 2. Render List Kategori
+        var c = document.getElementById('annualBudgetsList');
+        if (!c) return;
+        c.innerHTML = '';
+
+        if (budgets.length === 0) {
+          c.innerHTML = '<span style="color:var(--text-muted)">Belum ada data anggaran tahunan untuk ' + (res.year || year) + '. Atur budget bulanan atau klik "+ Atur Khusus Tahunan" untuk menambah batas belanja.</span>';
+          return;
+        }
+
+        budgets.forEach(function (b) {
+          var barCol = '#8B5CF6';
+          var statusBadge = '';
+          var bPct = b.percentage || 0;
+          if (bPct > 100) {
+            barCol = '#F43F5E';
+            statusBadge = '<span style="font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; background: rgba(244,63,94,0.18); color: #F43F5E; font-weight: 700;">🚨 Overbudget</span>';
+          } else if (bPct >= 80) {
+            barCol = '#F59E0B';
+            statusBadge = '<span style="font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; background: rgba(245,158,11,0.15); color: #F59E0B; font-weight: 600;">⚠️ Mendekati Plafon</span>';
+          } else {
+            statusBadge = '<span style="font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; background: rgba(16,185,129,0.15); color: #10B981; font-weight: 600;">✅ Aman</span>';
+          }
+
+          var safeCatName = (b.category_name || '').replace(/'/g, "\\'");
+          var div = document.createElement('div');
+          div.className = 'card';
+          div.style.padding = '16px 20px';
+          div.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">' +
+            '  <div style="display:flex; align-items:center; gap:8px;">' +
+            '    <strong style="font-size: 0.95rem;">' + b.category_name + '</strong>' +
+            '    ' + statusBadge +
+            '  </div>' +
+            '  <span class="currency-val" style="font-weight:700; color:' + barCol + '">' + bPct + '%</span>' +
+            '</div>' +
+            '<div style="height:8px; background:var(--bg-primary); border-radius:99px; overflow:hidden;">' +
+            '  <div style="width:' + Math.min(100, bPct) + '%; height:100%; background:' + barCol + ';"></div>' +
+            '</div>' +
+            '<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; font-size:0.78rem; color:var(--text-muted); margin-top:10px; padding-top:8px; border-top:1px dashed var(--border-color);">' +
+            '  <div>Rutin (Bulanan x 12): <br><strong class="currency-val" style="color:var(--text-main); font-size:0.85rem;">' + self.fmtRp(b.monthly_x12) + '</strong>' + (b.monthly_limit > 0 ? (' <span style="font-size:0.7rem; color:var(--text-muted);">(' + self.fmtRp(b.monthly_limit) + '/bln)</span>') : '') + '</div>' +
+            '  <div>Khusus Tahunan: <br><strong class="currency-val" style="color:#A78BFA; font-size:0.85rem;">' + (b.annual_extra > 0 ? ('+' + self.fmtRp(b.annual_extra)) : 'Rp 0') + '</strong></div>' +
+            '  <div>Total Plafon Setahun: <br><strong class="currency-val" style="color:var(--text-main); font-size:0.85rem;">' + self.fmtRp(b.total_limit) + '</strong></div>' +
+            '  <div>Realisasi Belanja YTD: <br><strong class="currency-val" style="color:' + (b.spent > b.total_limit ? 'var(--accent-rose)' : 'var(--text-main)') + '; font-size:0.85rem;">' + self.fmtRp(b.spent) + '</strong></div>' +
+            '  <div>Sisa Kuota Tahunan: <br><strong class="currency-val" style="color:' + (b.remaining > 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)') + '; font-size:0.85rem;">' + self.fmtRp(b.remaining) + '</strong></div>' +
+            '</div>' +
+            '<div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">' +
+            '  <button class="btn-sm-action" onclick="app.openAnnualBudgetModal(' + b.category_id + ', ' + b.annual_extra + ', \'' + safeCatName + '\', ' + (b.annual_extra_id || 'null') + ')">✏️ Atur Khusus Tahunan</button>' +
+            '</div>';
+          c.appendChild(div);
+        });
+      },
+
+      openAnnualBudgetModal: function (catId, currentExtra, catName, extraId) {
+        var year = document.getElementById('bAnnualYearFilter') ? document.getElementById('bAnnualYearFilter').value : new Date().getFullYear();
+        var abYearEl = document.getElementById('abYear');
+        if (abYearEl) abYearEl.value = year;
+        var abIdEl = document.getElementById('abId');
+        if (abIdEl) abIdEl.value = extraId || '';
+        var abLimEl = document.getElementById('abLimit');
+        if (abLimEl) abLimEl.value = currentExtra || '';
+
+        var abCatSel = document.getElementById('abCat');
+        if (abCatSel && catId) {
+          abCatSel.value = catId;
+        }
+        this.openModal('modalAnnualBudget');
+      },
+
+      saveAnnualBudget: function (e) {
+        e.preventDefault();
+        var btn = document.getElementById('btnSubmitAnnualBudget');
+        if (!this.lockSubmit(btn)) return;
+
+        var self = this;
+        var payload = {
+          id: document.getElementById('abId').value,
+          year: document.getElementById('abYear').value,
+          category_id: document.getElementById('abCat').value,
+          limit: Number(document.getElementById('abLimit').value)
+        };
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              self.unlockSubmit(btn);
+              alert(res.message);
+              self.closeModal('modalAnnualBudget');
+              self.loadAnnualBudgets(true);
+            })
+            .withFailureHandler(function (err) {
+              self.unlockSubmit(btn);
+              alert('Gagal: ' + (err.message || err));
+            })
+            .apiSaveAnnualBudget(payload, 'User');
+        }
+      },
+
       // INVESTASI (SIMPEL: MODAL & NILAI SAAT INI + ROI %)
       loadInvestments: function () {
         var self = this;
@@ -8962,9 +9252,11 @@
 
             var cSel = document.getElementById('tCat');
             var bCatSel = document.getElementById('bCat');
+            var abCatSel = document.getElementById('abCat');
             var scanCatSel = document.getElementById('scanCat');
             var fCSel = document.getElementById('fCat');
             cSel.innerHTML = ''; bCatSel.innerHTML = ''; scanCatSel.innerHTML = '';
+            if (abCatSel) abCatSel.innerHTML = '';
             if (fCSel) fCSel.innerHTML = '<option value="all">Semua Kategori</option>';
 
             // Populasi List Multi-Select Kategori
@@ -8976,6 +9268,7 @@
               if (fCSel) fCSel.innerHTML += opt;
               if (c.type === 'expense') {
                 bCatSel.innerHTML += opt;
+                if (abCatSel) abCatSel.innerHTML += opt;
                 scanCatSel.innerHTML += opt;
               }
 
