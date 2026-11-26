@@ -2063,6 +2063,8 @@
                 </select>
               </div>
               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn-secondary-action" onclick="app.copyPreviousYearBudget()"
+                  title="Salin seluruh alokasi budget tahunan dari 1 tahun sebelumnya ke tahun ini">📋 Salin Budget Tahun Lalu</button>
                 <button class="btn-accent-blue" onclick="app.openAnnualBudgetModal()">+ Atur Khusus Tahunan</button>
               </div>
             </div>
@@ -3141,9 +3143,12 @@
             💡 Anggaran khusus tahunan di luar belanja rutin bulanan, seperti Pajak Kendaraan (PKB/STNK), PBB, Asuransi Tahunan, Liburan/Mudik, Qurban, Uang Masuk Sekolah, atau Renovasi.
           </p>
         </div>
-        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
-          <button type="button" class="btn-sm-action" onclick="app.closeModal('modalAnnualBudget')">Batal</button>
-          <button type="submit" class="btn-accent-blue" id="btnSubmitAnnualBudget">Simpan Budget Tahunan</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px;">
+          <button type="button" class="btn-sm-action" id="btnDeleteAnnualBudget" style="color:var(--accent-rose); display:none;" onclick="app.deleteAnnualBudgetFromModal()">🗑️ Hapus Budget</button>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn-sm-action" onclick="app.closeModal('modalAnnualBudget')">Batal</button>
+            <button type="submit" class="btn-accent-blue" id="btnSubmitAnnualBudget">Simpan Budget Tahunan</button>
+          </div>
         </div>
       </form>
     </div>
@@ -8390,10 +8395,30 @@
             '  <div>Sisa Kuota Tahunan: <br><strong class="currency-val" style="color:' + (b.remaining > 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)') + '; font-size:0.85rem;">' + self.fmtRp(b.remaining) + '</strong></div>' +
             '</div>' +
             '<div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">' +
-            '  <button class="btn-sm-action" onclick="app.openAnnualBudgetModal(' + b.category_id + ', ' + b.annual_extra + ', \'' + safeCatName + '\', ' + (b.annual_extra_id || 'null') + ')">✏️ Atur Khusus Tahunan</button>' +
+            '  <button class="btn-sm-action" onclick="app.openAnnualBudgetModal(' + (b.category_id === null ? 'null' : b.category_id) + ', ' + b.annual_extra + ', \'' + safeCatName + '\', ' + (b.annual_extra_id || 'null') + ')">✏️ Atur Khusus Tahunan</button>' +
+            '  <button class="btn-sm-action" style="color:var(--accent-rose);" onclick="app.deleteAnnualBudget(' + (b.category_id === null ? 'null' : b.category_id) + ', \'' + safeCatName + '\', ' + (b.annual_extra_id || 'null') + ')">🗑️ Hapus</button>' +
             '</div>';
           c.appendChild(div);
         });
+      },
+
+      copyPreviousYearBudget: function () {
+        var year = document.getElementById('bAnnualYearFilter') ? document.getElementById('bAnnualYearFilter').value : new Date().getFullYear();
+        var prevYear = Number(year) - 1;
+        if (!confirm('Salin seluruh alokasi budget tahunan dari tahun ' + prevYear + ' ke tahun ' + year + '?\nAnggaran yang sudah terdaftar pada tahun ini tidak akan tertimpa.')) return;
+
+        var self = this;
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              alert(res.message);
+              self.loadAnnualBudgets(true);
+            })
+            .withFailureHandler(function (err) {
+              alert('Gagal menyalin budget tahunan: ' + (err.message || err));
+            })
+            .apiCopyPreviousYearBudgets(year, self.getActiveUser());
+        }
       },
 
       openAnnualBudgetModal: function (catId, currentExtra, catName, extraId) {
@@ -8409,7 +8434,67 @@
         if (abCatSel && catId) {
           abCatSel.value = catId;
         }
+
+        var btnDel = document.getElementById('btnDeleteAnnualBudget');
+        if (btnDel) {
+          btnDel.style.display = (extraId || catId) ? 'inline-block' : 'none';
+        }
         this.openModal('modalAnnualBudget');
+      },
+
+      deleteAnnualBudget: function (catId, catName, extraId) {
+        var year = document.getElementById('bAnnualYearFilter') ? document.getElementById('bAnnualYearFilter').value : new Date().getFullYear();
+        var label = catName || 'anggaran ini';
+        if (!confirm('Hapus alokasi anggaran untuk "' + label + '" pada tahun ' + year + '?\nData anggaran kategori ini akan dibersihkan dari sistem.')) return;
+
+        var self = this;
+        var payload = {
+          id: extraId || null,
+          category_id: (catId === 'null' || catId === null) ? null : catId,
+          year: year
+        };
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              alert(res.message);
+              self.loadAnnualBudgets(true);
+            })
+            .withFailureHandler(function (err) {
+              alert('Gagal menghapus budget tahunan: ' + (err.message || err));
+            })
+            .apiDeleteAnnualBudget(payload, 'User');
+        }
+      },
+
+      deleteAnnualBudgetFromModal: function () {
+        var extraId = document.getElementById('abId').value;
+        var catId = document.getElementById('abCat').value;
+        var year = document.getElementById('abYear').value || (document.getElementById('bAnnualYearFilter') ? document.getElementById('bAnnualYearFilter').value : new Date().getFullYear());
+        var sel = document.getElementById('abCat');
+        var catName = (sel && sel.selectedIndex >= 0) ? sel.options[sel.selectedIndex].text : 'anggaran ini';
+
+        if (!confirm('Hapus alokasi anggaran untuk "' + catName + '" pada tahun ' + year + '?')) return;
+
+        var self = this;
+        var payload = {
+          id: extraId ? Number(extraId) : null,
+          category_id: (catId === '' || catId === 'null') ? null : catId,
+          year: year
+        };
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(function (res) {
+              alert(res.message);
+              self.closeModal('modalAnnualBudget');
+              self.loadAnnualBudgets(true);
+            })
+            .withFailureHandler(function (err) {
+              alert('Gagal menghapus budget: ' + (err.message || err));
+            })
+            .apiDeleteAnnualBudget(payload, 'User');
+        }
       },
 
       saveAnnualBudget: function (e) {
