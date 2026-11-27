@@ -1521,7 +1521,7 @@
         <div>
           <div style="display: flex; align-items: center; gap: 6px;">
             <div class="brand-title">RuangDana</div>
-            <span style="font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38BDF8;">v1.58.0</span>
+            <span style="font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38BDF8;">v1.59.0</span>
           </div>
           <div class="brand-subtitle">Finansial Keluarga</div>
         </div>
@@ -1608,7 +1608,7 @@
           <div>
             <div style="display: flex; align-items: center; gap: 6px;">
               <span class="header-title-text">RuangDana</span>
-              <span class="app-version-badge" style="font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3);">v1.58.0</span>
+              <span class="app-version-badge" style="font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3);">v1.59.0</span>
             </div>
             <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Pembukuan Keuangan Terpadu</span>
           </div>
@@ -4198,7 +4198,7 @@
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 14px; flex-wrap: wrap; gap: 8px;">
-        <span style="font-size: 0.72rem; color: var(--text-muted);">RuangDana &bull; Versi Sistem: <strong style="color: var(--accent-blue);">v1.58.0</strong></span>
+        <span style="font-size: 0.72rem; color: var(--text-muted);">RuangDana &bull; Versi Sistem: <strong style="color: var(--accent-blue);">v1.59.0</strong></span>
         <button type="button" class="btn-sm-action" onclick="app.closeModal('modalUnifiedSettings')">Tutup</button>
       </div>
     </div>
@@ -5479,12 +5479,6 @@
       // DASHBOARD & CHARTS
       loadDashboard: function (forceRefresh) {
         var self = this;
-        // In-memory instant render (0 detik): render langsung dari cache browser jika ada
-        if (self.cache.dashboard && !forceRefresh) {
-          self.renderDashboard(self.cache.dashboard);
-          return;
-        }
-
         if (typeof google !== 'undefined' && google.script && google.script.run) {
           google.script.run
             .withSuccessHandler(function (data) {
@@ -6045,13 +6039,6 @@
 
       loadTransactions: function (forceRefresh) {
         var self = this;
-        // In-memory instant render (0 detik): jika cache transaksi sudah ada di memori
-        if (self.cache.transactions && self.cache.transactions.length > 0 && !forceRefresh) {
-          self.filterTransactions();
-          if (self.txnSubTab === 'calendar') self.renderCashflowCalendar();
-          return;
-        }
-
         var tbody = document.getElementById('txnTableBody');
         tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Memuat transaksi...</td></tr>';
 
@@ -8356,12 +8343,6 @@
 
       loadWallets: function (forceRefresh) {
         var self = this;
-        // In-memory instant render (0 detik): render seketika jika cache dompet sudah ada
-        if (self.cache.dashboard && self.cache.dashboard.wallets && !forceRefresh) {
-          self.renderWalletsList(self.cache.dashboard.wallets);
-          return;
-        }
-
         var c = document.getElementById('walletsList');
         if (c) c.innerHTML = '<span style="color:var(--text-muted)">Memuat dompet...</span>';
 
@@ -8546,12 +8527,6 @@
 
         self.loadBudgetAnalysis(p);
 
-        // In-memory instant render (0 detik): render seketika jika cache anggaran bulan ini sudah ada
-        if (self.cache.budgets && self.cache.budgets[p] && !forceRefresh) {
-          self.renderBudgetsList(self.cache.budgets[p], p);
-          return;
-        }
-
         var c = document.getElementById('budgetsList');
         if (c) c.innerHTML = '<span style="color:var(--text-muted)">Memuat anggaran...</span>';
 
@@ -8680,11 +8655,6 @@
         var self = this;
         var selY = document.getElementById('bAnnualYearFilter');
         var year = selY ? selY.value : String(new Date().getFullYear());
-
-        if (self.cache.annualBudgets && self.cache.annualBudgets[year] && !forceRefresh) {
-          self.renderAnnualBudgets(self.cache.annualBudgets[year], year);
-          return;
-        }
 
         var c = document.getElementById('annualBudgetsList');
         if (c) c.innerHTML = '<span style="color:var(--text-muted)">Memuat anggaran tahunan ' + year + '...</span>';
@@ -10471,11 +10441,6 @@
         var savedDeduct = localStorage.getItem('ruangdana_zakat_deduction');
         var inpDeduct = document.getElementById('inpZakatDeduction');
         if (savedDeduct && inpDeduct) inpDeduct.value = Number(savedDeduct);
-
-        if (self.cache.zakat && !forceRefresh) {
-          self.renderZakat(self.cache.zakat);
-          return;
-        }
 
         var goldPrice = inpGold ? Number(inpGold.value) || 1500000 : 1500000;
         var deduction = inpDeduct ? Number(inpDeduct.value) || 0 : (savedDeduct ? Number(savedDeduct) || 0 : 0);
